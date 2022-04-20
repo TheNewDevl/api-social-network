@@ -31,5 +31,5 @@ export class User extends TimestampEntity {
         enum: UserRoleEnum,
         default: UserRoleEnum.USER
     })
-    role: boolean
+    role: UserRoleEnum
 } 
