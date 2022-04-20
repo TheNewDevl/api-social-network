@@ -1,11 +1,11 @@
 import { Comment } from "src/comment/entities/comment.entity";
+import { UserRoleEnum } from "src/enums/roles.enum";
 import { TimestampEntity } from "src/generics/timestamp.entity";
 import { Post } from "src/post/entities/post.entity";
 import { Profile } from "src/profile/entities/profile.entity";
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
 
 @Entity()
-@Unique('unique_mail_and_username', ['email', 'username'])
 export class User extends TimestampEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string
@@ -20,15 +20,16 @@ export class User extends TimestampEntity {
     @OneToMany(() => Comment, (comment) => comment.user)
     comments: Comment[]
 
-    @Column()
+    @Column({ unique: true })
     email: string
 
     @Column()
     password: string
 
-    @Column()
-    username: string
-
-    @Column({ default: false })
-    isAdmin: boolean
+    @Column({
+        type: 'enum',
+        enum: UserRoleEnum,
+        default: UserRoleEnum.USER
+    })
+    role: boolean
 } 
