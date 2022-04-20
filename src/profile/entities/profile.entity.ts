@@ -6,9 +6,6 @@ export class Profile extends TimestampEntity {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column({ unique: true })
-    username: string
-
     @Column()
     bio: string
 
