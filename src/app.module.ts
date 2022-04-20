@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { CommentModule } from './comment/comment.module';
+import { PostModule } from './post/post.module';
+import { UserModule } from './user/user.module';
+import { ProfileModule } from './profile/profile.module';
 import dbConfig from './config/databaseConfig';
 
 @Module({
@@ -15,12 +17,16 @@ import dbConfig from './config/databaseConfig';
       username: dbConfig.username,
       password: dbConfig.password,
       database: dbConfig.name,
-      entities: [],
+      entities: ["dist/**/*.entity{.ts,.js}"],
       logging: true,
       synchronize: true,
-    })
+    }),
+    CommentModule,
+    PostModule,
+    UserModule,
+    ProfileModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule { }
