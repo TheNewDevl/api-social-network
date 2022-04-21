@@ -1,4 +1,4 @@
-import { Comment } from "src/comment/entities/comment.entity";
+import { Comment } from "src/post/entities/comment.entity";
 import { TimestampEntity } from "src/generics/timestamp.entity";
 import { User } from "src/user/entities/user.entity";
 import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, Column } from "typeorm";
