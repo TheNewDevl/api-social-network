@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommentModule } from './comment/comment.module';
+import { CommentModule } from './post/comment.module';
 import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
 import { ProfileModule } from './profile/profile.module';
+import { AuthModule } from './auth/auth.module';
 import dbConfig from './config/databaseConfig';
 
 @Module({
@@ -21,10 +22,11 @@ import dbConfig from './config/databaseConfig';
       logging: true,
       synchronize: true,
     }),
+    AuthModule,
     CommentModule,
     PostModule,
     UserModule,
-    ProfileModule
+    ProfileModule,
   ],
   controllers: [],
   providers: [],

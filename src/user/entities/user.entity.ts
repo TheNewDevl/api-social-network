@@ -1,4 +1,4 @@
-import { Comment } from "src/comment/entities/comment.entity";
+import { Comment } from "src/post/entities/comment.entity";
 import { UserRoleEnum } from "src/enums/roles.enum";
 import { TimestampEntity } from "src/generics/timestamp.entity";
 import { Post } from "src/post/entities/post.entity";
