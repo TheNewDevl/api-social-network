@@ -3,16 +3,19 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../user/user.module'
 import { AuthService } from './auth.service';
-import { JwtStrategyTest } from './strategies/jwt.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import * as dotenv from 'dotenv'
 import { Repository } from 'typeorm';
+
 dotenv.config()
 
 @Module({
   imports: [
     Repository,
     UserModule,
-    PassportModule,
+    PassportModule.register(
+      { defaultStrategy: 'jwt' }
+    ),
     JwtModule.register({
       secret: process.env.SECRET_KEY,
       signOptions: {
@@ -20,7 +23,7 @@ dotenv.config()
       }
     }),
   ],
-  providers: [AuthService, JwtStrategyTest],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule { }

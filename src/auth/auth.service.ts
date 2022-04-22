@@ -11,14 +11,12 @@ export class AuthService {
         private jwtService: JwtService,
     ) { }
 
-    async validateUser(loginData: LoginUserDto) {
+    async loginUser(loginData: LoginUserDto) {
 
         const { username, password } = loginData
 
         //user can pass email or username to login
         const user = await this.usersService.findOne(username)
-
-        console.log(user);
 
         //check password
         const isMatch = await bcrypt.compare(password, user.password)
@@ -28,7 +26,7 @@ export class AuthService {
             const payload = {
                 id: user.id,
                 username: user.username,
-                role: user.role
+                roles: user.roles
             }
 
             const token = this.jwtService.sign(payload)
