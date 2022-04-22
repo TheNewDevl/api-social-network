@@ -1,14 +1,21 @@
-import { Injectable, CanActivate, ExecutionContext, Req } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, Req, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { InjectRepository } from '@nestjs/typeorm';
 import { UserRoleEnum } from 'src/enums/roles.enum';
+import { User } from 'src/user/entities/user.entity';
+import { Repository, ReturningStatementNotSupportedError } from 'typeorm';
 import { ROLES_KEY } from '../roles.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-    constructor(private readonly reflector: Reflector) {
+    constructor(
+        private readonly reflector: Reflector,
+        @InjectRepository(User)
+        private userRepository: Repository<User>
+    ) {
     }
 
-    canActivate(context: ExecutionContext): boolean {
+    async canActivate(context: ExecutionContext) {
         const requiredRoles = this.reflector.get<UserRoleEnum[]>(ROLES_KEY,
             context.getHandler(),
         );
@@ -17,9 +24,30 @@ export class RolesGuard implements CanActivate {
             return true;
         }
 
-        const { user } = context.switchToHttp().getRequest();
-        console.log(user);
+        //extract user and params  from request
+        const { user } = context.switchToHttp().getRequest()
+        const isAdmin = requiredRoles.some((role) => user.roles?.includes(role))
+        console.log('is admin ? ' + isAdmin);
 
-        return requiredRoles.some((role) => user.roles?.includes(role));
+        if (isAdmin) {
+            return true
+        }
+
+        const { params } = context.switchToHttp().getRequest()
+        const reqId = user.userId
+        const checkId = params.id
+
+        const targetData = await this.userRepository.createQueryBuilder('user')
+            .where("user.id = :checkId", { checkId }).getOne()
+        if (!targetData) {
+            throw new UnauthorizedException('Introuvable')
+        }
+
+        const isOwner = reqId === targetData.id
+        if (isOwner) {
+            return true
+        }
+
+        throw new UnauthorizedException('Vous n\'avez pas le droit d\'effectuer cette action')
     }
 }
