@@ -1,4 +1,4 @@
-import { TimestampEntity } from "src/generics/timestamp.entity";
+import { TimestampEntity } from "src/utils/generics/timestamp.entity";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()

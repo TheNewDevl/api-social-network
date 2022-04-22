@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, Req, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserRoleEnum } from 'src/enums/roles.enum';
+import { UserRoleEnum } from 'src/utils/enums/roles.enum';
 import { User } from 'src/user/entities/user.entity';
 import { Repository, ReturningStatementNotSupportedError } from 'typeorm';
 import { ROLES_KEY } from '../roles.decorator';

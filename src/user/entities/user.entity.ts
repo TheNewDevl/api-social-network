@@ -1,6 +1,6 @@
 import { Comment } from "src/post/entities/comment.entity";
-import { UserRoleEnum } from "src/enums/roles.enum";
-import { TimestampEntity } from "src/generics/timestamp.entity";
+import { UserRoleEnum } from "src/utils/enums/roles.enum";
+import { TimestampEntity } from "src/utils/generics/timestamp.entity";
 import { Post } from "src/post/entities/post.entity";
 import { Profile } from "src/profile/entities/profile.entity";
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique } from "typeorm";

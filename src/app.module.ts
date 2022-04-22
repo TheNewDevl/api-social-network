@@ -6,7 +6,7 @@ import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
 import { ProfileModule } from './profile/profile.module';
 import { AuthModule } from './auth/auth.module';
-import dbConfig from './config/databaseConfig';
+import dbConfig from './utils/config/databaseConfig';
 
 @Module({
   imports: [
