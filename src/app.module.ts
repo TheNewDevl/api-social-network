@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { ProfileModule } from './profile/profile.module';
 import { AuthModule } from './auth/auth.module';
 import dbConfig from './utils/config/databaseConfig';
+import { Repository } from 'typeorm';
 
 @Module({
   imports: [

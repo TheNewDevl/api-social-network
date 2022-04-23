@@ -3,8 +3,8 @@ import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRoleEnum } from 'src/utils/enums/roles.enum';
 import { User } from 'src/user/entities/user.entity';
-import { Repository, ReturningStatementNotSupportedError } from 'typeorm';
-import { ROLES_KEY } from '../roles.decorator';
+import { Repository } from 'typeorm';
+import { ROLES_KEY } from '../../utils/decorators/roles.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {

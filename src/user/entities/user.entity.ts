@@ -10,7 +10,7 @@ export class User extends TimestampEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
-    @OneToOne(() => Profile)
+    @OneToOne(() => Profile, (profile) => profile.user)
     @JoinColumn()
     profile: Profile
 
