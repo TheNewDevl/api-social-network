@@ -1,12 +1,21 @@
-import { IsOptional, IsString, IsUrl, MinLength } from "class-validator"
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateProfileDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(20)
+  firstName: string;
 
-    @IsString()
-    @MinLength(150)
-    bio: string
+  @IsString()
+  @MinLength(3)
+  @MaxLength(20)
+  lastName: string;
 
-    @IsOptional()
-    @IsUrl()
-    photo: string
-} 
+  @IsString()
+  @MinLength(20)
+  @MaxLength(2000)
+  bio: string;
+
+  @IsOptional()
+  photo: string;
+}

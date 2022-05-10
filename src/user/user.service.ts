@@ -9,37 +9,31 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-
-  ) { }
-
+  ) {}
 
   async findOne(username: Partial<LoginUserDto>) {
-
-    const user = await this.userRepository.createQueryBuilder('user')
-      .where("user.username = :username",
-        username
-      )
-      .getOne()
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.username = :username', username)
+      .getOne();
 
     if (!user) {
-      throw new NotFoundException('Utilisateur introuvable')
+      throw new NotFoundException('Utilisateur introuvable');
     }
 
-    return user
+    return user;
   }
 
   async deleteUser(id: string) {
-
-    const deletion = await this.userRepository.delete(id)
+    const deletion = await this.userRepository.delete(id);
     if (deletion.affected === 0) {
-      throw new NotFoundException('Cet utilisateur n\'a pas été retrouvé')
+      throw new NotFoundException("Cet utilisateur n'a pas été retrouvé");
     }
 
-    return { deletion, message: 'Utilisateur supprimé !' }
+    return { deletion, message: 'Utilisateur supprimé !' };
   }
 
-
   async findAll() {
-    return await this.userRepository.find()
+    return await this.userRepository.find();
   }
 }
