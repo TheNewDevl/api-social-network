@@ -26,9 +26,12 @@ import {
   fileFilter,
   limits,
 } from 'src/utils/config/multerConfig';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/utils/decorators/roles.decorator';
+import { UserRoleEnum } from 'src/utils/enums/roles.enum';
 
 @Controller('posts')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(
   FileInterceptor('file', {
     storage: diskStorage({
@@ -54,8 +57,6 @@ export class PostController {
 
   @Get()
   async findAll(@Query() queryParams) {
-    console.log(queryParams);
-
     return await this.postService.findAll(queryParams);
   }
 
@@ -64,13 +65,17 @@ export class PostController {
     return this.postService.findOne(+id);
   }
 
+  @Roles(UserRoleEnum.ADMIN)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(+id, updatePostDto);
+    return this.postService.update(id, updatePostDto);
   }
 
+  @Roles(UserRoleEnum.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string) {
+    console.log(id);
+
     return this.postService.remove(id);
   }
 }

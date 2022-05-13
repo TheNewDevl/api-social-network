@@ -98,12 +98,14 @@ export class PostService {
     return `This action returns a #${id} post`;
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
+  update(id: string, updatePostDto: UpdatePostDto) {
     return `This action updates a #${id} post`;
   }
 
   async remove(id: string) {
-    const deletion = await this.postRepository.delete(id);
+    const deletion = await this.postRepository.delete({ id: id });
+    console.log(deletion);
+
     if (deletion.affected === 0) {
       throw new NotFoundException('Suppression du post impossible');
     }
