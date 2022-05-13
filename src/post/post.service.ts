@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
+import { unlink } from 'fs';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -44,30 +45,45 @@ export class PostService {
       post.user = dbUser;
       file && (post.image = imgUrl);
 
-      //save the post in the DB
-      await this.postRepository.save(post);
-
-      return { message: 'Publication enregistrée' };
+      //save the post in the DB and return some data from the post created and the user
+      const newPost = await this.postRepository.save(post);
+      const { id, username } = user;
+      delete newPost.user;
+      const returnPost = {
+        ...newPost,
+        user: { id, username },
+      };
+      return { message: 'Publication enregistrée', post: returnPost };
     } catch (error) {
-      throw new BadRequestException(
-        'Une erreur est survenue lors de la création du post' + error,
-      );
+      //if any error, unlink the image uploaded
+      unlink(file.path, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+      throw new BadRequestException(error);
     }
   }
 
   /** Will return all posts with and their user id and user name */
-  async findAll() {
+  async findAll({ limit, offset }) {
     try {
       const posts = await this.postRepository
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.user', 'user')
+        .leftJoinAndSelect('user.profile', 'profile')
+        .orderBy('post.createdAt', 'DESC')
         .select([
           'post.id',
           'post.text',
           'post.image',
+          'post.createdAt',
           'user.id',
           'user.username',
+          'profile.photo',
         ])
+        .offset(parseInt(offset))
+        .limit(parseInt(limit))
         .getMany();
 
       return posts;
@@ -86,7 +102,12 @@ export class PostService {
     return `This action updates a #${id} post`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(id: string) {
+    const deletion = await this.postRepository.delete(id);
+    if (deletion.affected === 0) {
+      throw new NotFoundException('Suppression du post impossible');
+    }
+
+    return { message: 'Publication supprimée !' };
   }
 }

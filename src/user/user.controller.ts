@@ -17,20 +17,20 @@ import { LoginUserDto } from './dto/login-user.dto';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Roles(UserRoleEnum.ADMIN)
-  @Delete(':id')
-  deleteUser(@Param() id: string) {
-    return this.userService.deleteUser(id);
-  }
-
   @Get()
   getAll() {
     return this.userService.findAll();
   }
 
-  @Get(':username')
-  getOne(@Param() username: Partial<LoginUserDto>) {
-    return this.userService.findOne(username);
+  @Get(':id')
+  @Roles(UserRoleEnum.ADMIN)
+  getOne(@Param() id: Partial<LoginUserDto>) {
+    return this.userService.findOne(id);
+  }
+
+  @Roles(UserRoleEnum.ADMIN)
+  @Delete(':id')
+  deleteUser(@Param() id: string) {
+    return this.userService.deleteUser(id);
   }
 }

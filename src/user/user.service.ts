@@ -11,11 +11,13 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  async findOne(username: Partial<LoginUserDto>) {
+  async findOne(id: Partial<LoginUserDto>) {
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .where('user.username = :username', username)
+      .where('user.id = :id', id)
       .getOne();
+
+    delete user.password;
 
     if (!user) {
       throw new NotFoundException('Utilisateur introuvable');

@@ -13,7 +13,7 @@ export class Profile extends TimestampEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => User, (user) => user.profile, {})
+  @OneToOne(() => User, (user) => user.profile, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 
@@ -27,8 +27,7 @@ export class Profile extends TimestampEntity {
   lastName: string;
 
   @Column({
-    default:
-      'https://cdn.pixabay.com/photo/2016/10/18/18/19/question-mark-1750942_960_720.png',
+    nullable: true,
   })
   photo: string;
 }

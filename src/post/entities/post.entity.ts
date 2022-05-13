@@ -7,6 +7,7 @@ import {
   ManyToOne,
   OneToMany,
   Column,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -14,7 +15,8 @@ export class Post extends TimestampEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => User, (user) => user.posts, { onDelete: 'CASCADE' })
+  @JoinColumn()
   user: User;
 
   @OneToMany(() => Comment, (comment) => comment.post)

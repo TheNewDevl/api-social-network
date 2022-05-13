@@ -18,7 +18,7 @@ export class User extends TimestampEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => Profile, (profile) => profile.user, { onDelete: 'CASCADE' })
+  @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
 
   @OneToMany(() => Post, (post) => post.user)

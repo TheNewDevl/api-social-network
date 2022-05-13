@@ -41,8 +41,11 @@ export class RolesGuard implements CanActivate {
     }
 
     const { params } = context.switchToHttp().getRequest();
-    const reqId = user.userId;
+    const reqId = user.id;
     const checkId = params.id;
+
+    console.log(reqId);
+    console.log(checkId);
 
     const targetData = await this.userRepository
       .createQueryBuilder('user')
@@ -56,6 +59,10 @@ export class RolesGuard implements CanActivate {
     if (isOwner) {
       return true;
     }
+    console.log(targetData);
+
+    console.log(user);
+    console.log(targetData.id);
 
     throw new UnauthorizedException(
       "Vous n'avez pas le droit d'effectuer cette action",

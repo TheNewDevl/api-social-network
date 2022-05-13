@@ -1,3 +1,5 @@
+import { BadRequestException } from '@nestjs/common';
+
 type Mimetype = {
   [key: string]: string;
 };
@@ -23,7 +25,10 @@ export const customFileName = (req, file, fncallback) => {
 /** Filter upload files. Only accept the mimetypes in the MIME_TYPES object */
 export const fileFilter = (req, file, fncallback) => {
   if (!MIME_TYPES[file.mimetype]) {
-    return fncallback(new Error('Format de fichier non supporté'), false);
+    return fncallback(
+      new BadRequestException('Format de fichier non supporté'),
+      false,
+    );
   }
   fncallback(null, true);
 };
