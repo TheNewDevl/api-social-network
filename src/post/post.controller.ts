@@ -73,9 +73,9 @@ export class PostController {
 
   @Roles(UserRoleEnum.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Req() req: Request) {
     console.log(id);
 
-    return this.postService.remove(id);
+    return this.postService.remove(id, req);
   }
 }

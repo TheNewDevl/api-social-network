@@ -68,6 +68,8 @@ export class PostService {
   /** Will return all posts with and their user id and user name */
   async findAll({ limit, offset }) {
     try {
+      console.log({ offset, limit });
+
       const posts = await this.postRepository
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.user', 'user')
@@ -84,8 +86,7 @@ export class PostService {
         ])
         .offset(parseInt(offset))
         .limit(parseInt(limit))
-        .getMany();
-
+        .getManyAndCount();
       return posts;
     } catch (error) {
       throw new BadRequestException(
@@ -102,10 +103,17 @@ export class PostService {
     return `This action updates a #${id} post`;
   }
 
-  async remove(id: string) {
-    const deletion = await this.postRepository.delete({ id: id });
-    console.log(deletion);
+  async remove(id: string, req: Request) {
+    const post = await this.postRepository.findOne({ id: id });
+    //if post contains a photo retrive the filename and detele it
+    if (post.image) {
+      const filename = post.image.split(`${req.get('host')}/`)[1];
+      unlink(`images/${filename}`, (err) => {
+        console.log(err);
+      });
+    }
 
+    const deletion = await this.postRepository.delete({ id });
     if (deletion.affected === 0) {
       throw new NotFoundException('Suppression du post impossible');
     }

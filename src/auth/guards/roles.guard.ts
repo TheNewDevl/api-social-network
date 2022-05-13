@@ -58,12 +58,13 @@ export class RolesGuard implements CanActivate {
         .leftJoinAndSelect(`${builderParam}.user`, 'user')
         .where(`${builderParam}.id = :id`, { id: paramId })
         .getOne();
+
       if (!targetData) {
         throw new NotFoundException(
           "Ressource introuvable, vous n'avez pas le droit d'effectuer cette action",
         );
       }
-      if (tokenUserId === targetData.id) {
+      if (tokenUserId === targetData.user.id) {
         return true;
       }
     };
