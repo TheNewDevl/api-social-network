@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { profile } from 'console';
 import { Request } from 'express';
 import { unlink } from 'fs';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
+import { LikePostDto } from './dto/like-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
 
@@ -65,7 +67,7 @@ export class PostService {
     }
   }
 
-  /** Will return all posts with and their user id and user name */
+  /** Will return all posts with their user id and username */
   async findAll({ limit, offset }) {
     try {
       console.log({ offset, limit });
@@ -74,8 +76,10 @@ export class PostService {
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
+        .leftJoinAndSelect('post.likes', 'likes')
         .orderBy('post.createdAt', 'DESC')
         .select([
+          'likes.id',
           'post.id',
           'post.text',
           'post.image',
@@ -95,12 +99,54 @@ export class PostService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  async findOne(id: string) {
+    try {
+      const post = await this.postRepository.findOne({ id: id });
+      return post;
+    } catch (error) {
+      throw new NotFoundException('Post introuvable');
+    }
   }
 
-  update(id: string, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async update(
+    id: string,
+    updatePostDto: UpdatePostDto,
+    file: Express.Multer.File,
+    req: Request,
+  ) {
+    try {
+      //lets retrieve the post in DB
+      const post = await this.postRepository.findOne({ id: id });
+      if (!post) {
+        throw new NotFoundException('Erreur lors de la récupération du post.');
+      }
+      //lets retrive the img url and delete it from storage
+      if (file && post.image) {
+        const filename = post.image.split(`${req.get('host')}/`)[1];
+        unlink(`images/${filename}`, (err) => {
+          console.log(err);
+        });
+      }
+
+      const imgUrl = file
+        ? `${req.protocol}://${req.get('host')}/${file.filename}`
+        : null;
+
+      post.text = updatePostDto.text;
+      file && (post.image = imgUrl);
+
+      const update = await this.postRepository.save(post);
+      return update;
+    } catch (error) {
+      console.log(error);
+      //if any error, unlink the image uploaded
+      unlink(file.path, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+      throw new BadRequestException(error);
+    }
   }
 
   async remove(id: string, req: Request) {
@@ -120,4 +166,29 @@ export class PostService {
 
     return { message: 'Publication supprimée !' };
   }
+
+  async likesManagement(id: string, likePostDto: LikePostDto, user: User) {
+    try {
+      if (likePostDto.like === 'like') {
+        const like = await this.postRepository
+          .createQueryBuilder()
+          .relation(Post, 'likes')
+          .of(id)
+          .add(user.id);
+      } else if (likePostDto.like === 'unlike') {
+        const unLike = await this.postRepository
+          .createQueryBuilder()
+          .relation(Post, 'likes')
+          .of(id)
+          .remove(user.id);
+      }
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestException('Vous avez déja liké cette publication.');
+      }
+      throw error;
+    }
+  }
+
+  async getLikes(id: string) {}
 }

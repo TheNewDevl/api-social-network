@@ -29,7 +29,7 @@ import {
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/utils/decorators/roles.decorator';
 import { UserRoleEnum } from 'src/utils/enums/roles.enum';
-
+import { LikePostDto } from './dto/like-post.dto';
 @Controller('posts')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(
@@ -61,21 +61,37 @@ export class PostController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.postService.findOne(id);
   }
 
   @Roles(UserRoleEnum.ADMIN)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(id, updatePostDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updatePostDto: UpdatePostDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
+  ) {
+    return await this.postService.update(id, updatePostDto, file, req);
   }
 
   @Roles(UserRoleEnum.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string, @Req() req: Request) {
-    console.log(id);
+  async remove(@Param('id') id: string, @Req() req: Request) {
+    return await this.postService.remove(id, req);
+  }
 
-    return this.postService.remove(id, req);
+  @Patch('likes/:id')
+  async likesManagement(
+    @Param('id') id: string,
+    @Body() likePostDto: LikePostDto,
+    @reqUser() user: User,
+  ) {
+    return await this.postService.likesManagement(id, likePostDto, user);
+  }
+  @Get('likes/:id')
+  async getLikes(@Param('id') id: string) {
+    return await this.postService.getLikes(id);
   }
 }

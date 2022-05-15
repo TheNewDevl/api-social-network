@@ -1,17 +1,24 @@
 import {
-  IsAlphanumeric,
+  IsNumber,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
-  @IsOptional()
   @MaxLength(2000)
+  @MinLength(3)
   text: string;
 
   @IsOptional()
   @IsString()
   file: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Matches(/^like$/ || /^unlike$/)
+  like: string;
 }

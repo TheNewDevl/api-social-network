@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { UserRoleEnum } from 'src/utils/enums/roles.enum';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +29,9 @@ export class AuthService {
         password: hash,
         username: username,
       });
+      if (createUserDto.email === 'admin@groupomania.com') {
+        user.roles = UserRoleEnum.ADMIN;
+      }
       const dbUser = await this.userRepository.save(user);
       return { message: 'Utilisateur créé avec succes' };
     } catch (error) {

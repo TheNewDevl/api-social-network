@@ -8,6 +8,8 @@ import {
   OneToMany,
   Column,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 @Entity()
@@ -29,4 +31,8 @@ export class Post extends TimestampEntity {
     nullable: true,
   })
   image: string;
+
+  @ManyToMany(() => User, (user) => user.likes, { cascade: true })
+  @JoinTable()
+  likes: User[];
 }

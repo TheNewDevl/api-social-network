@@ -7,6 +7,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -41,8 +42,11 @@ export class User extends TimestampEntity {
     enum: UserRoleEnum,
     default: UserRoleEnum.USER,
   })
-  roles: UserRoleEnum[];
+  roles: UserRoleEnum;
 
   @Column({ default: 0 })
   hasProfile: number;
+
+  @ManyToMany(() => Post, (post) => post.likes)
+  likes: Post[];
 }
