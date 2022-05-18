@@ -6,12 +6,11 @@ import { Profile } from 'src/profile/entities/profile.entity';
 import {
   Column,
   Entity,
-  JoinColumn,
+  JoinTable,
   ManyToMany,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-  Unique,
 } from 'typeorm';
 
 @Entity()
@@ -48,5 +47,6 @@ export class User extends TimestampEntity {
   hasProfile: number;
 
   @ManyToMany(() => Post, (post) => post.likes)
+  @JoinTable()
   likes: Post[];
 }

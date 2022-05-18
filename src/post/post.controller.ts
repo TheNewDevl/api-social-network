@@ -90,8 +90,4 @@ export class PostController {
   ) {
     return await this.postService.likesManagement(id, likePostDto, user);
   }
-  @Get('likes/:id')
-  async getLikes(@Param('id') id: string) {
-    return await this.postService.getLikes(id);
-  }
 }

@@ -9,7 +9,6 @@ import {
   Column,
   JoinColumn,
   ManyToMany,
-  JoinTable,
 } from 'typeorm';
 
 @Entity()
@@ -32,7 +31,6 @@ export class Post extends TimestampEntity {
   })
   image: string;
 
-  @ManyToMany(() => User, (user) => user.likes, { cascade: true })
-  @JoinTable()
+  @ManyToMany(() => User, (user) => user.likes, { onDelete: 'CASCADE' })
   likes: User[];
 }

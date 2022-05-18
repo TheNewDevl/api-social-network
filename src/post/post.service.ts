@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { profile } from 'console';
 import { Request } from 'express';
 import { unlink } from 'fs';
+import { Comment } from 'src/comments/entities/comment.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -21,6 +21,8 @@ export class PostService {
     private userRepository: Repository<User>,
     @InjectRepository(Post)
     private postRepository: Repository<Post>,
+    @InjectRepository(Comment)
+    private commentRepository: Repository<Comment>,
   ) {}
 
   async create(
@@ -53,8 +55,10 @@ export class PostService {
       delete newPost.user;
       const returnPost = {
         ...newPost,
+        likes: [],
         user: { id, username },
       };
+
       return { message: 'Publication enregistrée', post: returnPost };
     } catch (error) {
       //if any error, unlink the image uploaded
@@ -71,7 +75,6 @@ export class PostService {
   async findAll({ limit, offset }) {
     try {
       console.log({ offset, limit });
-
       const posts = await this.postRepository
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.user', 'user')
@@ -93,6 +96,7 @@ export class PostService {
         .getManyAndCount();
       return posts;
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(
         'Il y a eu une erreur lors du chargement des données depuis le serveur',
       );
@@ -170,13 +174,13 @@ export class PostService {
   async likesManagement(id: string, likePostDto: LikePostDto, user: User) {
     try {
       if (likePostDto.like === 'like') {
-        const like = await this.postRepository
+        await this.postRepository
           .createQueryBuilder()
           .relation(Post, 'likes')
           .of(id)
           .add(user.id);
       } else if (likePostDto.like === 'unlike') {
-        const unLike = await this.postRepository
+        await this.postRepository
           .createQueryBuilder()
           .relation(Post, 'likes')
           .of(id)
@@ -189,6 +193,4 @@ export class PostService {
       throw error;
     }
   }
-
-  async getLikes(id: string) {}
 }
