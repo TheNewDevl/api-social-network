@@ -13,14 +13,15 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { LikePostDto } from './dto/like-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
+import { PostRepository } from './repository/post.repository';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    @InjectRepository(Post)
-    private postRepository: Repository<Post>,
+    @InjectRepository(PostRepository)
+    private postRepository: PostRepository,
     @InjectRepository(Comment)
     private commentRepository: Repository<Comment>,
   ) {}
@@ -74,41 +75,20 @@ export class PostService {
   /** Will return all posts with their user id and username */
   async findAll({ limit, offset }) {
     try {
-      console.log({ offset, limit });
-      const posts = await this.postRepository
-        .createQueryBuilder('post')
-        .leftJoinAndSelect('post.user', 'user')
-        .leftJoinAndSelect('user.profile', 'profile')
-        .leftJoinAndSelect('post.likes', 'likes')
-        .orderBy('post.createdAt', 'DESC')
-        .select([
-          'likes.id',
-          'post.id',
-          'post.text',
-          'post.image',
-          'post.createdAt',
-          'user.id',
-          'user.username',
-          'profile.photo',
-        ])
-        .offset(parseInt(offset))
-        .limit(parseInt(limit))
-        .getManyAndCount();
+      const posts = await this.postRepository.getAllPaginated(+offset, +limit);
       return posts;
     } catch (error) {
       console.log(error);
-      throw new BadRequestException(
-        'Il y a eu une erreur lors du chargement des données depuis le serveur',
-      );
+      throw error;
     }
   }
 
   async findOne(id: string) {
     try {
-      const post = await this.postRepository.findOne({ id: id });
+      const post = await this.postRepository.findOneByPostId(id);
       return post;
     } catch (error) {
-      throw new NotFoundException('Post introuvable');
+      throw error;
     }
   }
 
