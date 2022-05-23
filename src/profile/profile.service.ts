@@ -6,19 +6,19 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
 import { User } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { Profile } from './entities/profile.entity';
 import { unlink } from 'fs';
+import { ProfileRepository } from 'src/repositories/profile.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 
 @Injectable()
 export class ProfileService {
   constructor(
-    @InjectRepository(Profile)
-    private readonly profileRepository: Repository<Profile>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(ProfileRepository)
+    private readonly profileRepository: ProfileRepository,
+    @InjectRepository(UserRepository)
+    private readonly userRepository: UserRepository,
   ) {}
 
   async create(
@@ -27,42 +27,31 @@ export class ProfileService {
     user: Partial<User>,
     req: Request,
   ) {
-    //first retrieve User from DB
-    const dbUser = await this.userRepository.findOne(user.id);
-    if (!dbUser)
-      throw new NotFoundException(
-        'Utilisateur introuvable, création impossible',
-      );
+    try {
+      //User wanting to create a profile
+      const dbUser = await this.userRepository.findOneUser(user.id);
 
-    //Create Profile and link it to User
-    const newProfile = this.profileRepository.create({
-      ...createProfileDto,
-      user: dbUser,
-    });
-    console.log(file);
+      // create url for the file if file uploaded
+      const imgUrl = file
+        ? `${req.protocol}://${req.get('host')}/${file.filename}`
+        : null;
 
-    //Create img url if file exists and push it to the profile
-    if (file) {
-      const imgUrl = `${req.protocol}://${req.get('host')}/${file.filename}`;
-      newProfile.photo = imgUrl;
+      //Create Profile
+      const newProfile = this.profileRepository.create({
+        ...createProfileDto,
+        user: dbUser,
+      });
+      file && (newProfile.photo = imgUrl);
 
-      console.log(imgUrl);
+      //save profile
+      const profile = await this.profileRepository.saveProfile(newProfile);
+
+      dbUser.hasProfile = 1;
+      await this.userRepository.saveUser(dbUser);
+      return { message: 'Profil sauvegardé', profile };
+    } catch (error) {
+      throw error;
     }
-
-    //save profile
-    await this.profileRepository.save(newProfile).catch((e) => {
-      throw new BadRequestException(
-        'Il y a eu une erreur lors de la création du profil !' + e,
-      );
-    });
-
-    //set hasprofile to true
-    dbUser.hasProfile = 1;
-    const updatedUser = await this.userRepository.save(dbUser);
-    if (!updatedUser) {
-      throw new NotFoundException("Mise à jour de l'utilisateur impossible !");
-    }
-    return { message: 'Profil sauvegardé' };
   }
 
   async findAll() {

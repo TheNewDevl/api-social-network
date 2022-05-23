@@ -7,9 +7,20 @@ import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Post } from 'src/post/entities/post.entity';
 import { Comment } from 'src/comments/entities/comment.entity';
+import { ProfileRepository } from 'src/repositories/profile.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Profile, User, Post, Comment])],
+  imports: [
+    TypeOrmModule.forFeature([
+      ProfileRepository,
+      UserRepository,
+      Profile,
+      User,
+      Post,
+      Comment,
+    ]),
+  ],
   controllers: [ProfileController],
   providers: [ProfileService, Repository],
 })

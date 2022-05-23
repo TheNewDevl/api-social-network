@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
 import { unlink } from 'fs';
@@ -13,19 +9,14 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
 import { PostRepository } from '../repositories/post.repository';
 import { UserRepository } from 'src/repositories/user.repository';
-import { CommentRepository } from 'src/repositories/comment.repository';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(PostRepository)
     private postRepository: PostRepository,
-
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
-    @InjectRepository(CommentRepository)
-    private commentRepository: CommentRepository,
   ) {}
 
   async create(
@@ -36,7 +27,7 @@ export class PostService {
   ) {
     try {
       //first retrieve User from DB
-      const dbUser = await this.userRepository.findUserWithAvatar(user.id);
+      const dbUser = await this.userRepository.findUserAndAvatar(user.id);
 
       //set imgUrl user sent file
       const imgUrl = file
@@ -98,10 +89,8 @@ export class PostService {
   ) {
     try {
       //lets retrieve the post in DB
-      const post = await this.postRepository.findOne({ id: id });
-      if (!post) {
-        throw new NotFoundException('Erreur lors de la récupération du post.');
-      }
+      const post = await this.postRepository.findOneByPostId(id);
+
       //lets retrive the img url and delete it from storage
       if (file && post.image) {
         const filename = post.image.split(`${req.get('host')}/`)[1];
@@ -113,14 +102,12 @@ export class PostService {
       const imgUrl = file
         ? `${req.protocol}://${req.get('host')}/${file.filename}`
         : null;
-
       post.text = updatePostDto.text;
       file && (post.image = imgUrl);
 
       const update = await this.postRepository.save(post);
       return update;
     } catch (error) {
-      console.log(error);
       //if any error, unlink the image uploaded
       unlink(file.path, (err) => {
         if (err) {
@@ -132,7 +119,8 @@ export class PostService {
   }
 
   async remove(id: string, req: Request) {
-    const post = await this.postRepository.findOne({ id: id });
+    const post = await this.postRepository.findOneByPostId(id);
+    await this.postRepository.deletePost(id);
     //if post contains a photo retrive the filename and detele it
     if (post.image) {
       const filename = post.image.split(`${req.get('host')}/`)[1];
@@ -140,34 +128,19 @@ export class PostService {
         console.log(err);
       });
     }
-
-    const deletion = await this.postRepository.delete({ id });
-    if (deletion.affected === 0) {
-      throw new NotFoundException('Suppression du post impossible');
-    }
-
     return { message: 'Publication supprimée !' };
   }
 
   async likesManagement(id: string, likePostDto: LikePostDto, user: User) {
     try {
       if (likePostDto.like === 'like') {
-        await this.postRepository
-          .createQueryBuilder()
-          .relation(Post, 'likes')
-          .of(id)
-          .add(user.id);
+        await this.postRepository.addLike(id, user.id);
       } else if (likePostDto.like === 'unlike') {
-        await this.postRepository
-          .createQueryBuilder()
-          .relation(Post, 'likes')
-          .of(id)
-          .remove(user.id);
+        await this.postRepository.removeLike(id, user.id);
+      } else {
+        throw new BadRequestException('Valeur de like incorrecte !');
       }
     } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestException('Vous avez déja liké cette publication.');
-      }
       throw error;
     }
   }

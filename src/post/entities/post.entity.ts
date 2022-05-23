@@ -33,4 +33,6 @@ export class Post extends TimestampEntity {
 
   @ManyToMany(() => User, (user) => user.likes, { onDelete: 'CASCADE' })
   likes: User[];
+
+  commentsCount: number;
 }
