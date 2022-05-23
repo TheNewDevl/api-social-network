@@ -1,24 +1,20 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
 import { User } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { Profile } from './entities/profile.entity';
 import { unlink } from 'fs';
+import { ProfileRepository } from 'src/repositories/profile.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 
 @Injectable()
 export class ProfileService {
   constructor(
-    @InjectRepository(Profile)
-    private readonly profileRepository: Repository<Profile>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(ProfileRepository)
+    private readonly profileRepository: ProfileRepository,
+    @InjectRepository(UserRepository)
+    private readonly userRepository: UserRepository,
   ) {}
 
   async create(
@@ -27,83 +23,51 @@ export class ProfileService {
     user: Partial<User>,
     req: Request,
   ) {
-    //first retrieve User from DB
-    const dbUser = await this.userRepository.findOne(user.id);
-    if (!dbUser)
-      throw new NotFoundException(
-        'Utilisateur introuvable, création impossible',
-      );
+    try {
+      //User wanting to create a profile
+      const dbUser = await this.userRepository.findOneUserById(user.id);
 
-    //Create Profile and link it to User
-    const newProfile = this.profileRepository.create({
-      ...createProfileDto,
-      user: dbUser,
-    });
-    console.log(file);
+      // create url for the file if file uploaded
+      const imgUrl = file
+        ? `${req.protocol}://${req.get('host')}/${file.filename}`
+        : null;
 
-    //Create img url if file exists and push it to the profile
-    if (file) {
-      const imgUrl = `${req.protocol}://${req.get('host')}/${file.filename}`;
-      newProfile.photo = imgUrl;
+      //Create Profile
+      const newProfile = this.profileRepository.create({
+        ...createProfileDto,
+        user: dbUser,
+      });
+      file && (newProfile.photo = imgUrl);
 
-      console.log(imgUrl);
+      //save profile
+      const profile = await this.profileRepository.saveProfile(newProfile);
+
+      dbUser.hasProfile = 1;
+      await this.userRepository.saveUser(dbUser);
+      return { message: 'Profil sauvegardé', profile };
+    } catch (error) {
+      throw error;
     }
-
-    //save profile
-    await this.profileRepository.save(newProfile).catch((e) => {
-      throw new BadRequestException(
-        'Il y a eu une erreur lors de la création du profil !' + e,
-      );
-    });
-
-    //set hasprofile to true
-    dbUser.hasProfile = 1;
-    const updatedUser = await this.userRepository.save(dbUser);
-    if (!updatedUser) {
-      throw new NotFoundException("Mise à jour de l'utilisateur impossible !");
-    }
-    return { message: 'Profil sauvegardé' };
   }
 
   async findAll() {
-    return await this.profileRepository
-      .createQueryBuilder('profile')
-      .leftJoinAndSelect('profile.user', 'user')
-      .select([
-        'user.id',
-        'user.username',
-        'profile.id',
-        'profile.bio',
-        'profile.photo',
-      ])
-      .getMany();
+    try {
+      return await this.profileRepository.findAllProfiles();
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findOne(id: string) {
-    console.log(id);
-
-    return await this.profileRepository
-      .createQueryBuilder('profile')
-      .leftJoinAndSelect('profile.user', 'user')
-      .leftJoinAndSelect('user.posts', 'posts')
-
-      .select([
-        'user.id',
-        'user.username',
-        'profile.id',
-        'profile.bio',
-        'profile.photo',
-        'profile.firstName',
-        'profile.lastName',
-        'profile.createdAt',
-        'posts.id',
-      ])
-      .where('profile.userId = :id', { id })
-      .getOne();
+    try {
+      return await this.profileRepository.getProfileIncludingPosts(id);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async update(
-    id: string,
+    userId: string,
     updateProfileDto: UpdateProfileDto,
     file: Express.Multer.File,
     req: Request,
@@ -114,37 +78,23 @@ export class ProfileService {
         ...updateProfileDto,
       };
 
+      //if file check if profile has already a photo, retrive filename and detele it
       if (file) {
-        const profile = await this.profileRepository.findOne({
-          where: {
-            user: id,
-          },
-        });
-
-        //if profile contains a photo retrive de filename and detele it
+        const profile = await this.profileRepository.findProfileByUserID(
+          userId,
+        );
         if (profile.photo) {
           const filename = profile.photo.split(`${req.get('host')}/`)[1];
           unlink(`images/${filename}`, (err) => {
             console.log(err);
           });
         }
-
-        //set image url
         const imgUrl = `${req.protocol}://${req.get('host')}/${file.filename}`;
         newProfile.photo = imgUrl;
       }
 
-      const update = await this.profileRepository
-        .createQueryBuilder('profile')
-        .update('Profile')
-        .set(newProfile)
-        .where('profile.userId = :id', { id })
-        .execute();
-      if (update.affected === 0) {
-        throw new NotFoundException(
-          'Mise à jour impossible. Profil non trouvé !',
-        );
-      }
+      await this.profileRepository.updateProfile(newProfile, userId);
+
       return { message: 'Profil modifié !' };
     } catch (error) {
       //if any error, unlink the image uploaded
@@ -153,7 +103,7 @@ export class ProfileService {
           console.log(err);
         }
       });
-      throw new BadRequestException(error);
+      throw error;
     }
   }
 }

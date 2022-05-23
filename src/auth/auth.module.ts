@@ -5,16 +5,14 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import * as dotenv from 'dotenv';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/user/entities/user.entity';
 import { AuthController } from './auth.controller';
-import { Post } from 'src/post/entities/post.entity';
-import { Comment } from 'src/comments/entities/comment.entity';
+import { UserRepository } from 'src/repositories/user.repository';
 
 dotenv.config();
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Post, Comment]),
+    TypeOrmModule.forFeature([UserRepository]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.SECRET_KEY,

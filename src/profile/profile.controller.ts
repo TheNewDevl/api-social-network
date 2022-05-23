@@ -66,11 +66,11 @@ export class ProfileController {
   @Patch(':id')
   @Roles(UserRoleEnum.USER)
   update(
-    @Param('id') id: string,
+    @Param('id') userId: string,
     @Body() updateProfileDto: UpdateProfileDto,
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
   ) {
-    return this.profileService.update(id, updateProfileDto, file, req);
+    return this.profileService.update(userId, updateProfileDto, file, req);
   }
 }

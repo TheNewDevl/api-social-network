@@ -1,17 +1,15 @@
-import { IsNotEmpty, IsString, MinLength } from "class-validator"
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class findOneDto {
+  @IsString()
+  @IsNotEmpty()
+  username: string;
 
-    @IsString()
-    @IsNotEmpty()
-    username: string
+  @IsString()
+  @IsNotEmpty()
+  email: string;
 
-    @IsString()
-    @IsNotEmpty()
-    email: string
-
-    @IsString()
-    @MinLength(36)
-    id: string
-
-} 
+  @IsString()
+  @MinLength(36)
+  id: string;
+}

@@ -62,6 +62,8 @@ export class PostController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
+    console.log(id);
+
     return await this.postService.findOne(id);
   }
 
