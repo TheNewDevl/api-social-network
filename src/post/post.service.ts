@@ -57,6 +57,7 @@ export class PostService {
         ...newPost,
         likes: [],
         user: { id, username },
+        commentsCount: 0,
       };
 
       return { message: 'Publication enregistrée', post: returnPost };
@@ -75,7 +76,7 @@ export class PostService {
   async findAll({ limit, offset }) {
     try {
       console.log({ offset, limit });
-      const posts = await this.postRepository
+      const [posts, countPosts] = await this.postRepository
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
@@ -90,11 +91,21 @@ export class PostService {
           'user.id',
           'user.username',
           'profile.photo',
+          'profile.id',
         ])
         .offset(parseInt(offset))
         .limit(parseInt(limit))
         .getManyAndCount();
-      return posts;
+
+      for (const post of posts) {
+        const test = await this.commentRepository
+          .createQueryBuilder('comment')
+          .where('comment.post = :post', { post: post.id })
+          .getCount();
+        post.commentsCount = test;
+      }
+
+      return [posts, countPosts];
     } catch (error) {
       console.log(error);
       throw new BadRequestException(

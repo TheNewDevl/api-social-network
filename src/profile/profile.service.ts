@@ -83,9 +83,10 @@ export class ProfileService {
     console.log(id);
 
     return await this.profileRepository
-
       .createQueryBuilder('profile')
       .leftJoinAndSelect('profile.user', 'user')
+      .leftJoinAndSelect('user.posts', 'posts')
+
       .select([
         'user.id',
         'user.username',
@@ -94,6 +95,8 @@ export class ProfileService {
         'profile.photo',
         'profile.firstName',
         'profile.lastName',
+        'profile.createdAt',
+        'posts.id',
       ])
       .where('profile.userId = :id', { id })
       .getOne();
