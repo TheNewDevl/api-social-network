@@ -6,24 +6,26 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
 import { unlink } from 'fs';
-import { Comment } from 'src/comments/entities/comment.entity';
 import { User } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { LikePostDto } from './dto/like-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
-import { PostRepository } from './repository/post.repository';
+import { PostRepository } from '../repositories/post.repository';
+import { UserRepository } from 'src/repositories/user.repository';
+import { CommentRepository } from 'src/repositories/comment.repository';
 
 @Injectable()
 export class PostService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
     @InjectRepository(PostRepository)
     private postRepository: PostRepository,
-    @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>,
+
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository,
+
+    @InjectRepository(CommentRepository)
+    private commentRepository: CommentRepository,
   ) {}
 
   async create(
@@ -34,12 +36,9 @@ export class PostService {
   ) {
     try {
       //first retrieve User from DB
-      const dbUser = await this.userRepository.findOne(user.id);
-      if (!dbUser)
-        throw new NotFoundException(
-          'Utilisateur introuvable, création impossible',
-        );
+      const dbUser = await this.userRepository.findUserWithAvatar(user.id);
 
+      //set imgUrl user sent file
       const imgUrl = file
         ? `${req.protocol}://${req.get('host')}/${file.filename}`
         : null;
@@ -51,13 +50,12 @@ export class PostService {
       file && (post.image = imgUrl);
 
       //save the post in the DB and return some data from the post created and the user
-      const newPost = await this.postRepository.save(post);
+      const newPost = await this.postRepository.savePost(post);
       const { id, username } = user;
-      delete newPost.user;
       const returnPost = {
         ...newPost,
         likes: [],
-        user: { id, username },
+        user: { id, username, profile: { photo: dbUser.profile.photo } },
       };
 
       return { message: 'Publication enregistrée', post: returnPost };
@@ -68,7 +66,7 @@ export class PostService {
           console.log(err);
         }
       });
-      throw new BadRequestException(error);
+      throw error;
     }
   }
 

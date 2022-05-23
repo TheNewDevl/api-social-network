@@ -5,10 +5,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Comment } from 'src/comments/entities/comment.entity';
-import { PostRepository } from './repository/post.repository';
+import { PostRepository } from '../repositories/post.repository';
+import { UserRepository } from 'src/repositories/user.repository';
+import { CommentRepository } from 'src/repositories/comment.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PostRepository, Post, User, Comment])],
+  imports: [
+    TypeOrmModule.forFeature([
+      PostRepository,
+      UserRepository,
+      CommentRepository,
+      Post,
+      User,
+      Comment,
+    ]),
+  ],
   controllers: [PostController],
   providers: [PostService],
 })
