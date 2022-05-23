@@ -8,22 +8,21 @@ import {
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRoleEnum } from 'src/utils/enums/roles.enum';
-import { User } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
 import { ROLES_KEY } from '../../utils/decorators/roles.decorator';
-import { Post } from 'src/post/entities/post.entity';
-import { Comment } from 'src/comments/entities/comment.entity';
+import { UserRepository } from 'src/repositories/user.repository';
+import { PostRepository } from 'src/repositories/post.repository';
+import { CommentRepository } from 'src/repositories/comment.repository';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    @InjectRepository(Post)
-    private postRepository: Repository<Post>,
-    @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>,
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository,
+    @InjectRepository(PostRepository)
+    private postRepository: PostRepository,
+    @InjectRepository(CommentRepository)
+    private commentRepository: CommentRepository,
   ) {}
 
   async canActivate(context: ExecutionContext) {

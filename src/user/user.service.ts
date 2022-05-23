@@ -1,38 +1,30 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { LoginUserDto } from './dto/login-user.dto';
-import { User } from './entities/user.entity';
+import { UserRepository } from 'src/repositories/user.repository';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository,
   ) {}
 
-  async findOne(id: Partial<LoginUserDto>) {
-    const user = await this.userRepository
-      .createQueryBuilder('user')
-      .where('user.id = :id', id)
-      .getOne();
-
-    delete user.password;
-
-    if (!user) {
-      throw new NotFoundException('Utilisateur introuvable');
+  async findOne(id: string) {
+    try {
+      const user = await this.userRepository.findOneUserById(id);
+      return user;
+    } catch (error) {
+      throw error;
     }
-
-    return user;
   }
 
   async deleteUser(id: string) {
-    const deletion = await this.userRepository.delete(id);
-    if (deletion.affected === 0) {
-      throw new NotFoundException("Cet utilisateur n'a pas été retrouvé");
+    try {
+      const deletion = await this.userRepository.delete(id);
+      return { deletion, message: 'Utilisateur supprimé !' };
+    } catch (error) {
+      throw error;
     }
-
-    return { deletion, message: 'Utilisateur supprimé !' };
   }
 
   async findAll() {

@@ -14,6 +14,10 @@ import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { LoggerMiddleware } from './utils/logger';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CommentRepository } from './repositories/comment.repository';
+import { PostRepository } from './repositories/post.repository';
+import { UserRepository } from './repositories/user.repository';
+import { ProfileRepository } from './repositories/profile.repository';
 
 @Module({
   imports: [

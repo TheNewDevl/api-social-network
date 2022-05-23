@@ -18,12 +18,27 @@ export class UserRepository extends Repository<User> {
     return user;
   }
 
-  async findOneUser(id: string) {
-    const user = await this.findOne({ id: id });
+  async findOneUserById(id: string) {
+    const user = await this.findOne({ id });
     if (!user)
       throw new NotFoundException(
         'Utilisateur introuvable, création impossible',
       );
+
+    delete user.password;
+
+    return user;
+  }
+
+  async findUserByUsername(username: string) {
+    const user = await this.createQueryBuilder('user')
+      .where('user.email = :username or user.username = :username', {
+        username,
+      })
+      .getOne();
+    if (!user) {
+      throw new NotFoundException('Utilisateur introuvable');
+    }
     return user;
   }
 
@@ -35,5 +50,13 @@ export class UserRepository extends Repository<User> {
       );
     }
     return user;
+  }
+
+  async deleteUser(id: string) {
+    const deletion = await this.delete(id);
+    if (deletion.affected === 0) {
+      throw new NotFoundException("Cet utilisateur n'a pas été retrouvé");
+    }
+    return deletion;
   }
 }
