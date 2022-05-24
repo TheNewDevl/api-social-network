@@ -30,6 +30,10 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/utils/decorators/roles.decorator';
 import { UserRoleEnum } from 'src/utils/enums/roles.enum';
 import { LikePostDto } from './dto/like-post.dto';
+import { EntityConverterPipe } from 'src/app.entityConverter.pipe';
+import { Post as PostEntity } from './entities/post.entity';
+import { EntityOwnerValidationPipe } from 'src/app.entityOwnerValidation.pipe';
+
 @Controller('posts')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(
@@ -62,26 +66,35 @@ export class PostController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    console.log(id);
-
     return await this.postService.findOne(id);
   }
 
-  @Roles(UserRoleEnum.ADMIN)
   @Patch(':id')
   async update(
-    @Param('id') id: string,
+    @Param(
+      'id',
+      new EntityConverterPipe(PostEntity.name),
+      EntityOwnerValidationPipe,
+    )
+    post: PostEntity,
     @Body() updatePostDto: UpdatePostDto,
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
   ) {
-    return await this.postService.update(id, updatePostDto, file, req);
+    return await this.postService.update(post, updatePostDto, file, req);
   }
 
-  @Roles(UserRoleEnum.ADMIN)
   @Delete(':id')
-  async remove(@Param('id') id: string, @Req() req: Request) {
-    return await this.postService.remove(id, req);
+  async remove(
+    @Param(
+      'id',
+      new EntityConverterPipe(PostEntity.name),
+      EntityOwnerValidationPipe,
+    )
+    post: PostEntity,
+    @Req() req: Request,
+  ) {
+    return await this.postService.remove(post, req);
   }
 
   @Patch('likes/:id')

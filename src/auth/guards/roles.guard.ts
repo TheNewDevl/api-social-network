@@ -43,6 +43,7 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
+    /*
     const { params, route } = context.switchToHttp().getRequest();
     const tokenUserId = user.id;
     const paramId = params.id;
@@ -68,7 +69,7 @@ export class RolesGuard implements CanActivate {
       }
     };
 
-    //posts routes checks
+     //posts routes checks
     if (route.path === '/api/posts/:id') {
       return await checkProperty(this.postRepository, 'post');
     }
@@ -92,7 +93,7 @@ export class RolesGuard implements CanActivate {
       if (tokenUserId === user.id) {
         return true;
       }
-    }
+    } */
 
     throw new UnauthorizedException(
       "Vous n'avez pas le droit d'effectuer cette action",

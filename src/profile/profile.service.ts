@@ -7,6 +7,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { unlink } from 'fs';
 import { ProfileRepository } from 'src/repositories/profile.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { Profile } from './entities/profile.entity';
 
 @Injectable()
 export class ProfileService {
@@ -67,7 +68,7 @@ export class ProfileService {
   }
 
   async update(
-    userId: string,
+    profile: Profile,
     updateProfileDto: UpdateProfileDto,
     file: Express.Multer.File,
     req: Request,
@@ -80,9 +81,6 @@ export class ProfileService {
 
       //if file check if profile has already a photo, retrive filename and detele it
       if (file) {
-        const profile = await this.profileRepository.findProfileByUserID(
-          userId,
-        );
         if (profile.photo) {
           const filename = profile.photo.split(`${req.get('host')}/`)[1];
           unlink(`images/${filename}`, (err) => {
@@ -93,7 +91,7 @@ export class ProfileService {
         newProfile.photo = imgUrl;
       }
 
-      await this.profileRepository.updateProfile(newProfile, userId);
+      await this.profileRepository.updateProfile(newProfile, profile.id);
 
       return { message: 'Profil modifié !' };
     } catch (error) {

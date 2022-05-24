@@ -9,12 +9,15 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
+import { EntityConverterPipe } from 'src/app.entityConverter.pipe';
+import { EntityOwnerValidationPipe } from 'src/app.entityOwnerValidation.pipe';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { User } from 'src/user/entities/user.entity';
 import { reqUser } from 'src/utils/decorators/user.decorator';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { Comment } from './entities/comment.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('comment')
@@ -36,12 +39,27 @@ export class CommentController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentService.update(id, updateCommentDto);
+  update(
+    @Param(
+      'id',
+      new EntityConverterPipe(Comment.name),
+      EntityOwnerValidationPipe,
+    )
+    comment: Comment,
+    @Body() updateCommentDto: UpdateCommentDto,
+  ) {
+    return this.commentService.update(comment, updateCommentDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentService.remove(id);
+  remove(
+    @Param(
+      'id',
+      new EntityConverterPipe(Comment.name),
+      EntityOwnerValidationPipe,
+    )
+    comment: Comment,
+  ) {
+    return this.commentService.remove(comment);
   }
 }

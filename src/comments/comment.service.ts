@@ -4,6 +4,7 @@ import { CommentRepository } from 'src/repositories/comment.repository';
 import { User } from 'src/user/entities/user.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { Comment } from './entities/comment.entity';
 
 @Injectable()
 export class CommentService {
@@ -56,18 +57,18 @@ export class CommentService {
     }
   }
 
-  async update(id: string, updateCommentDto: UpdateCommentDto) {
+  async update(comment: Comment, updateCommentDto: UpdateCommentDto) {
     try {
-      await this.commentRepository.updateById(id, updateCommentDto);
+      await this.commentRepository.updateById(comment.id, updateCommentDto);
       return updateCommentDto;
     } catch (error) {
       throw error;
     }
   }
 
-  async remove(id: string) {
+  async remove(comment: Comment) {
     try {
-      await this.commentRepository.deleteComment(id);
+      await this.commentRepository.deleteComment(comment.id);
       return { message: 'Publication supprimée !' };
     } catch (error) {
       throw error;

@@ -74,12 +74,12 @@ export class ProfileRepository extends Repository<Profile> {
     return profile;
   }
 
-  /**update profile passing updated profile and user Id */
-  async updateProfile(newProfile: Partial<Profile>, userId: string) {
+  /**update profile passing updated profile and profile id */
+  async updateProfile(newProfile: Partial<Profile>, profileId: string) {
     const profile = await this.createQueryBuilder('profile')
       .update('Profile')
       .set(newProfile)
-      .where('profile.userId = :id', { id: userId })
+      .where('profile.id = :id', { id: profileId })
       .execute();
     if (profile.affected === 0) {
       throw new NotFoundException(

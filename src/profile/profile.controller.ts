@@ -27,6 +27,9 @@ import {
 import { Request } from 'express';
 import { Roles } from 'src/utils/decorators/roles.decorator';
 import { UserRoleEnum } from 'src/utils/enums/roles.enum';
+import { EntityConverterPipe } from 'src/app.entityConverter.pipe';
+import { Profile } from './entities/profile.entity';
+import { EntityOwnerValidationPipe } from 'src/app.entityOwnerValidation.pipe';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(
@@ -64,13 +67,17 @@ export class ProfileController {
   }
 
   @Patch(':id')
-  @Roles(UserRoleEnum.USER)
   update(
-    @Param('id') userId: string,
+    @Param(
+      'id',
+      new EntityConverterPipe(Profile.name),
+      EntityOwnerValidationPipe,
+    )
+    profile: Profile,
     @Body() updateProfileDto: UpdateProfileDto,
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
   ) {
-    return this.profileService.update(userId, updateProfileDto, file, req);
+    return this.profileService.update(profile, updateProfileDto, file, req);
   }
 }

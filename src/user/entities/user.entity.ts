@@ -12,9 +12,10 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import EntityOwnerInterface from 'src/EntityOwnerInterface';
 
 @Entity()
-export class User extends TimestampEntity {
+export class User extends TimestampEntity implements EntityOwnerInterface {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -49,4 +50,8 @@ export class User extends TimestampEntity {
   @ManyToMany(() => Post, (post) => post.likes)
   @JoinTable()
   likes: Post[];
+
+  getUserId() {
+    return this.id;
+  }
 }

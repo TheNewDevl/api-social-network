@@ -10,11 +10,15 @@ import {
   JoinColumn,
   ManyToMany,
 } from 'typeorm';
+import EntityOwnerInterface from 'src/EntityOwnerInterface';
 
 @Entity()
-export class Post extends TimestampEntity {
+export class Post extends TimestampEntity implements EntityOwnerInterface {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column()
+  userId: string;
 
   @ManyToOne(() => User, (user) => user.posts, { onDelete: 'CASCADE' })
   @JoinColumn()
@@ -35,4 +39,8 @@ export class Post extends TimestampEntity {
   likes: User[];
 
   commentsCount: number;
+
+  getUserId() {
+    return this.userId;
+  }
 }

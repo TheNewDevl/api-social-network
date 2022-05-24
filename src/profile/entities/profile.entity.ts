@@ -1,3 +1,4 @@
+import EntityOwnerInterface from 'src/EntityOwnerInterface';
 import { User } from 'src/user/entities/user.entity';
 import { TimestampEntity } from 'src/utils/generics/timestamp.entity';
 import {
@@ -9,9 +10,12 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class Profile extends TimestampEntity {
+export class Profile extends TimestampEntity implements EntityOwnerInterface {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column()
+  userId: string;
 
   @OneToOne(() => User, (user) => user.profile, { onDelete: 'CASCADE' })
   @JoinColumn()
@@ -30,4 +34,8 @@ export class Profile extends TimestampEntity {
     nullable: true,
   })
   photo: string;
+
+  getUserId() {
+    return this.userId;
+  }
 }

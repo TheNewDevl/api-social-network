@@ -82,15 +82,12 @@ export class PostService {
   }
 
   async update(
-    id: string,
+    post: Post,
     updatePostDto: UpdatePostDto,
     file: Express.Multer.File,
     req: Request,
   ) {
     try {
-      //lets retrieve the post in DB
-      const post = await this.postRepository.findOneByPostId(id);
-
       //lets retrive the img url and delete it from storage
       if (file && post.image) {
         const filename = post.image.split(`${req.get('host')}/`)[1];
@@ -118,9 +115,8 @@ export class PostService {
     }
   }
 
-  async remove(id: string, req: Request) {
-    const post = await this.postRepository.findOneByPostId(id);
-    await this.postRepository.deletePost(id);
+  async remove(post: Post, req: Request) {
+    await this.postRepository.deletePost(post.id);
     //if post contains a photo retrive the filename and detele it
     if (post.image) {
       const filename = post.image.split(`${req.get('host')}/`)[1];
