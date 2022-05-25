@@ -8,7 +8,7 @@ describe('UserService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [UserService],
     }).compile();
-
+    /* repository = modRef.get<Repository<User>>(getREpositoryToken(User)) */
     service = module.get<UserService>(UserService);
   });
 

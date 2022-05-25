@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserService } from 'src/user/user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
@@ -26,8 +26,7 @@ dotenv.config();
       },
     }),
   ],
+  providers: [UserService],
   controllers: [UserController],
-  providers: [UserService, AuthService],
-  exports: [UserService],
 })
 export class UserModule {}

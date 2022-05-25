@@ -3,7 +3,6 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
-  NotFoundException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,20 +15,22 @@ import { CommentRepository } from 'src/repositories/comment.repository';
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(
-    private readonly reflector: Reflector,
-    @InjectRepository(UserRepository)
+    private readonly reflector: Reflector /*     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
     @InjectRepository(PostRepository)
     private postRepository: PostRepository,
     @InjectRepository(CommentRepository)
-    private commentRepository: CommentRepository,
+    private commentRepository: CommentRepository, */,
   ) {}
 
-  async canActivate(context: ExecutionContext) {
-    const requiredRoles = this.reflector.get<UserRoleEnum[]>(
+  async canActivate(
+    context: ExecutionContext,
+    requiredRoles = this.reflector.get<UserRoleEnum[]>(
       ROLES_KEY,
       context.getHandler(),
-    );
+    ),
+  ) {
+    console.log(requiredRoles);
 
     if (!requiredRoles) {
       return true;

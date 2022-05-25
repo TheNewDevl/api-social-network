@@ -28,6 +28,11 @@ export class UserService {
   }
 
   async findAll() {
-    return await this.userRepository.find();
+    try {
+      const users = await this.userRepository.find();
+      return users;
+    } catch (error) {
+      throw error;
+    }
   }
 }

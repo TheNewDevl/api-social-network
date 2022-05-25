@@ -27,8 +27,6 @@ import {
   limits,
 } from 'src/utils/config/multerConfig';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/utils/decorators/roles.decorator';
-import { UserRoleEnum } from 'src/utils/enums/roles.enum';
 import { LikePostDto } from './dto/like-post.dto';
 import { EntityConverterPipe } from 'src/app.entityConverter.pipe';
 import { Post as PostEntity } from './entities/post.entity';
