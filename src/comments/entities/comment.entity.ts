@@ -21,7 +21,10 @@ export class Comment extends TimestampEntity implements EntityOwnerInterface {
   @Column({ default: 0 })
   lastComment: number;
 
+  @Column()
+  userId: string;
+
   getUserId() {
-    return this.user;
+    return this.userId;
   }
 }

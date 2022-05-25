@@ -30,6 +30,8 @@ export class CommentController {
     @Body() createCommentDto: CreateCommentDto,
     @reqUser() user: Partial<User>,
   ) {
+    console.log(this.commentService);
+
     return await this.commentService.create(createCommentDto, user);
   }
 

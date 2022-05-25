@@ -19,13 +19,14 @@ export class UserController {
   }
 
   @Get(':id')
-  @Roles(UserRoleEnum.ADMIN)
+  /*   @Roles(UserRoleEnum.ADMIN)
+   */
   async getOne(@Param('id') id: string) {
     return await this.userService.findOne(id);
   }
 
-  @Roles(UserRoleEnum.ADMIN)
-  @Delete(':id')
+  /*   @Roles(UserRoleEnum.ADMIN)
+   */ @Delete(':id')
   async deleteUser(
     @Param('id', new EntityConverterPipe(User.name), EntityOwnerValidationPipe)
     user: User,
