@@ -14,8 +14,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
   @Get()
   @Roles(UserRoleEnum.ADMIN)
-  getAll() {
-    return this.userService.findAll();
+  async getAll() {
+    return await this.userService.findAll();
   }
 
   @Get(':id')

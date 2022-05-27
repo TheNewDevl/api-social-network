@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import { CommentController } from './comment.controller';
 import { CommentService } from './comment.service';
-
+import { Post } from '../post/entities/post.entity';
+import { User } from '../user/entities/user.entity';
 describe('CommentController', () => {
   let controller: CommentController;
 
@@ -11,16 +12,38 @@ describe('CommentController', () => {
       const comment = {
         id: randomUUID(),
         text: createCommentDto.text,
-        createdAt: Date.now(),
+        createdAt: null,
         user: {
           username: user.username,
           id: user.id,
+          ...new User(),
+          getUserId() {
+            return '';
+          },
         },
         post: {
           id: createCommentDto.postId,
+          user: { ...new User() },
+          ...new Post(),
+          getUserId() {
+            return '';
+          },
+        },
+        lastComment: 0,
+        deletedAt: null,
+        updatedAt: null,
+        userId: user.id,
+        getUserId() {
+          return '';
         },
       };
       return comment;
+    }),
+    findAllByPost: jest.fn(() => {
+      return '';
+    }),
+    update: jest.fn((comment, updateCommentDto) => {
+      return { ...updateCommentDto };
     }),
   };
 
@@ -37,22 +60,66 @@ describe('CommentController', () => {
     controller = await module.resolve<CommentController>(CommentController);
   });
 
-  it('should be defined', () => {
+  const createCommentDto = {
+    text: 'this is a comment',
+    postId: 'azerty',
+  };
+  const user = {
+    username: 'dupont',
+    id: 'qwerty',
+  };
+
+  it('controller should be defined', () => {
     expect(controller).toBeDefined();
   });
 
   describe('Create post route', () => {
-    const createCommentDto = {
-      text: 'this is a comment',
-      postId: 'azerty',
-    };
-    const user = {
-      username: 'dupont',
-      id: 'qwerty',
-    };
+    it('should call one create method from comment service ', async () => {
+      await controller.create(createCommentDto, user);
+      expect(mockCommentService.create).toHaveBeenCalled();
+    });
+    it('should call service with createCommentDto and user ', async () => {
+      expect(mockCommentService.create).toBeCalledWith(createCommentDto, user);
+    });
+    it('should return', async () => {
+      const comment = await controller.create(createCommentDto, user);
+      expect(comment).toBeDefined();
+    });
+  });
 
-    it('should be defined', async () => {
-      expect(await controller.create(createCommentDto, user)).toBeDefined();
+  describe(' route get findAllByPost', () => {
+    const queryParams = {
+      offset: '1',
+      limit: '1',
+    };
+    const postId = 'AZERTY';
+    it('should call service method once with postId and an object containing offset and limit ', async () => {
+      await controller.findAllByPost(postId, queryParams);
+      expect(mockCommentService.findAllByPost).toHaveBeenCalledTimes(1);
+      expect(mockCommentService.findAllByPost).toHaveBeenCalledWith(
+        { limit: '1', offset: '1' },
+        'AZERTY',
+      );
+    });
+  });
+
+  describe(' patch update ', () => {
+    const comment = mockCommentService.create(createCommentDto, user);
+    const updateCommentDto = { text: 'update text' };
+
+    it('should call service update methode one, passing comment Entity and dto ', async () => {
+      await controller.update(comment, updateCommentDto);
+      expect(mockCommentService.update).toHaveBeenCalledTimes(1);
+      expect(mockCommentService.update).toHaveBeenCalledWith(
+        comment,
+        updateCommentDto,
+      );
+    });
+
+    it('should return dto  ', async () => {
+      expect(await controller.update(comment, updateCommentDto)).toEqual(
+        updateCommentDto,
+      );
     });
   });
 });

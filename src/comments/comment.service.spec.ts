@@ -2,7 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
 import { CommentRepository } from 'src/repositories/comment.repository';
+import { Repository } from 'typeorm';
 import { CommentService } from './comment.service';
+import { Comment } from './entities/comment.entity';
 
 describe('CommentService', () => {
   let service: CommentService;
@@ -33,8 +35,15 @@ describe('CommentService', () => {
         throw new Error('id fourni ne correspond à aucun post');
       }
     }),
-  };
 
+    findPaginatedCommentByPost: jest
+      .fn()
+      .mockResolvedValue(['comment1', 'comment2']),
+
+    updateById: jest.fn().mockReturnValue(''),
+    deleteComment: jest.fn(),
+  };
+  //////////
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -119,6 +128,61 @@ describe('CommentService', () => {
           id: createCommentDto.postId,
         },
       });
+    });
+  });
+
+  describe('Find all by post ', () => {
+    const queryParams = {
+      offset: '0',
+      limit: '2',
+    };
+    const postId = '1234';
+    it('sould be defined', () => {
+      expect(service.findAllByPost).toBeDefined();
+    });
+
+    it('should call commentRepository.findPaginatedCommentByPost', async () => {
+      await service.findAllByPost(queryParams, postId);
+      expect(mockCommmentRepo.findPaginatedCommentByPost).toHaveBeenCalledWith(
+        0,
+        2,
+        '1234',
+      );
+    });
+    it('sould return comments array', async () => {
+      const comments = await service.findAllByPost(queryParams, postId);
+      expect(comments).toEqual(['comment1', 'comment2']);
+    });
+  });
+
+  describe('update', () => {
+    const comment = new Comment();
+    const updateCommentDto = { text: 'update text' };
+
+    it('should return updated text ', async () => {
+      const updated = await service.update(comment, updateCommentDto);
+      expect(updated).toEqual(updateCommentDto);
+    });
+    it('should call updateById   ', async () => {
+      expect(mockCommmentRepo.updateById).toHaveBeenCalledTimes(1);
+      expect(mockCommmentRepo.updateById).toHaveBeenCalledWith(
+        comment.id,
+        updateCommentDto,
+      );
+    });
+  });
+
+  describe('remove', () => {
+    const comment = new Comment();
+
+    it('should return success message  ', async () => {
+      const detele = await service.remove(comment);
+      expect(detele).toEqual({ message: 'Publication supprimée !' });
+    });
+
+    it('should call deleteComment with comment id    ', async () => {
+      expect(mockCommmentRepo.deleteComment).toHaveBeenCalledTimes(1);
+      expect(mockCommmentRepo.deleteComment).toHaveBeenCalledWith(comment.id);
     });
   });
 });

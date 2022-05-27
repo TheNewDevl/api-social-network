@@ -57,7 +57,7 @@ export class CommentService {
     }
   }
 
-  async update(comment: Comment, updateCommentDto: UpdateCommentDto) {
+  async update(comment: Partial<Comment>, updateCommentDto: UpdateCommentDto) {
     try {
       await this.commentRepository.updateById(comment.id, updateCommentDto);
       return updateCommentDto;

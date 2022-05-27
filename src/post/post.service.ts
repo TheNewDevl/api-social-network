@@ -46,17 +46,23 @@ export class PostService {
       const returnPost = {
         ...newPost,
         likes: [],
-        user: { id, username, profile: { photo: dbUser.profile.photo } },
+        user: {
+          id,
+          username,
+          profile: { photo: dbUser.profile && dbUser.profile.photo },
+        },
       };
 
       return { message: 'Publication enregistrée', post: returnPost };
     } catch (error) {
       //if any error, unlink the image uploaded
-      unlink(file.path, (err) => {
-        if (err) {
-          console.log(err);
-        }
-      });
+      if (file) {
+        unlink(file.path, (err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+      }
       throw error;
     }
   }
