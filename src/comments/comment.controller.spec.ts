@@ -4,6 +4,7 @@ import { CommentController } from './comment.controller';
 import { CommentService } from './comment.service';
 import { Post } from '../post/entities/post.entity';
 import { User } from '../user/entities/user.entity';
+import { Comment } from './entities/comment.entity';
 describe('CommentController', () => {
   let controller: CommentController;
 
@@ -45,6 +46,7 @@ describe('CommentController', () => {
     update: jest.fn((comment, updateCommentDto) => {
       return { ...updateCommentDto };
     }),
+    remove: jest.fn().mockResolvedValue({ message: 'Publication supprimée !' }),
   };
 
   beforeEach(async () => {
@@ -120,6 +122,19 @@ describe('CommentController', () => {
       expect(await controller.update(comment, updateCommentDto)).toEqual(
         updateCommentDto,
       );
+    });
+  });
+
+  describe(' remove ', () => {
+    const comment = new Comment();
+    it('should return msg  ', async () => {
+      const remove = await controller.remove(comment);
+      expect(remove).toEqual({ message: 'Publication supprimée !' });
+    });
+
+    it('should return msg ', () => {
+      expect(mockCommentService.remove).toHaveBeenCalledTimes(1);
+      expect(mockCommentService.remove).toHaveBeenCalledWith(comment);
     });
   });
 });

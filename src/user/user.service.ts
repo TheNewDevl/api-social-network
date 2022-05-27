@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/repositories/user.repository';
 
@@ -21,7 +21,11 @@ export class UserService {
   async deleteUser(id: string) {
     try {
       const deletion = await this.userRepository.delete(id);
-      return { deletion, message: 'Utilisateur supprimé !' };
+      if (deletion.affected === 0) {
+        throw new BadRequestException('Suppression impossible');
+      } else {
+        return { deletion, message: 'Utilisateur supprimé !' };
+      }
     } catch (error) {
       throw error;
     }

@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserRepository } from 'src/repositories/user.repository';
+import { DeleteResult } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 
@@ -27,7 +28,17 @@ describe('UserService', () => {
       }
       return Promise.resolve(user);
     }),
-    delete: jest.fn(),
+    delete: jest.fn((id) => {
+      const deletion: DeleteResult = {
+        raw: '',
+        affected: 0,
+      };
+      const user = usersArray.find((u) => u.id === id);
+
+      deletion.affected = user ? 1 : 0;
+
+      return Promise.resolve(deletion);
+    }),
     find: jest
       .fn()
       .mockResolvedValueOnce(usersArray)
@@ -93,11 +104,20 @@ describe('UserService', () => {
   describe('delete User', () => {
     it('should return success message ', async () => {
       expect(await service.deleteUser(user1.id)).toEqual({
+        deletion: { raw: '', affected: 1 },
         message: 'Utilisateur supprimé !',
       });
     });
+    it('should throw an error if deletion fails ', async () => {
+      try {
+        await service.deleteUser('9999');
+      } catch (error) {
+        expect(error.status).toBe(400);
+        expect(error.message).toEqual('Suppression impossible');
+      }
+    });
     it('should call repo method ', async () => {
-      expect(mockUserRepository.delete).toHaveBeenCalledTimes(1);
+      expect(mockUserRepository.delete).toHaveBeenCalledTimes(2);
       expect(mockUserRepository.delete).toHaveBeenCalledWith(user1.id);
     });
   });
