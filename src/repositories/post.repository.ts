@@ -67,7 +67,7 @@ export class PostRepository extends Repository<Post> {
   async deletePost(id: string) {
     const deletion = await this.delete({ id: id });
     if (deletion.affected === 0) {
-      throw new NotFoundException('Suppression du post impossible');
+      throw new BadRequestException('Suppression du post impossible');
     }
   }
 

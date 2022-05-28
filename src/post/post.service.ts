@@ -58,9 +58,7 @@ export class PostService {
       //if any error, unlink the image uploaded
       if (file) {
         unlink(file.path, (err) => {
-          if (err) {
-            console.log(err);
-          }
+          console.log(err);
         });
       }
       throw error;
@@ -73,7 +71,6 @@ export class PostService {
       const posts = await this.postRepository.getAllPaginated(+offset, +limit);
       return posts;
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }
@@ -122,15 +119,19 @@ export class PostService {
   }
 
   async remove(post: Post, req: Request) {
-    await this.postRepository.deletePost(post.id);
-    //if post contains a photo retrive the filename and detele it
-    if (post.image) {
-      const filename = post.image.split(`${req.get('host')}/`)[1];
-      unlink(`images/${filename}`, (err) => {
-        console.log(err);
-      });
+    try {
+      await this.postRepository.deletePost(post.id);
+      //if post contains a photo retrive the filename and detele it
+      if (post.image) {
+        const filename = post.image.split(`${req.get('host')}/`)[1];
+        unlink(`images/${filename}`, (err) => {
+          console.log(err);
+        });
+      }
+      return { message: 'Publication supprimée !' };
+    } catch (error) {
+      throw error;
     }
-    return { message: 'Publication supprimée !' };
   }
 
   async likesManagement(id: string, likePostDto: LikePostDto, user: User) {
