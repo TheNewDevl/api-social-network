@@ -1,10 +1,17 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 const appConfig = {
   get port(): number {
     return parseInt(this.getEnvValue('APP_PORT'));
   },
 
-  get secret(): string {
-    return this.getEnvValue('SECRET_KEY');
+  get ACCESS_TOKEN_KEY(): string {
+    return this.getEnvValue('ACCESS_TOKEN_KEY');
+  },
+
+  get REFRESH_TOKEN_KEY(): string {
+    return this.getEnvValue('REFRESH_TOKEN_KEY');
   },
 
   getEnvValue(key: string) {

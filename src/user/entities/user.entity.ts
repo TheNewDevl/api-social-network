@@ -13,6 +13,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import EntityOwnerInterface from 'src/EntityOwnerInterface';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User extends TimestampEntity implements EntityOwnerInterface {
@@ -50,6 +51,9 @@ export class User extends TimestampEntity implements EntityOwnerInterface {
   @ManyToMany(() => Post, (post) => post.likes)
   @JoinTable()
   likes: Post[];
+
+  @Exclude()
+  hashedRefreshToken: string;
 
   getUserId() {
     return this.id;

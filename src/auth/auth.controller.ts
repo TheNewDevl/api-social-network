@@ -1,4 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Request, response, Response } from 'express';
+import { get } from 'http';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { LoginUserDto } from 'src/user/dto/login-user.dto';
 import { AuthService } from './auth.service';
@@ -13,7 +15,20 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() loginData: LoginUserDto) {
-    return this.authService.loginUser(loginData);
+  login(
+    @Body() loginData: LoginUserDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.authService.loginUser(loginData, response);
+  }
+
+  @Get('refresh')
+  refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return this.authService.refreshToken(req, res);
+  }
+
+  @Get('logout')
+  logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return this.authService.logout(req, res);
   }
 }
