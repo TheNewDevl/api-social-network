@@ -19,12 +19,6 @@ dotenv.config();
       CommentRepository,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: process.env.ACCESS_TOKEN_KEY,
-      signOptions: {
-        expiresIn: 7200,
-      },
-    }),
   ],
   providers: [UserService],
   controllers: [UserController],

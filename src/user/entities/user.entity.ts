@@ -52,6 +52,7 @@ export class User extends TimestampEntity implements EntityOwnerInterface {
   @JoinTable()
   likes: Post[];
 
+  @Column({ nullable: true })
   @Exclude()
   hashedRefreshToken: string;
 

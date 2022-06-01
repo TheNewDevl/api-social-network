@@ -7,7 +7,7 @@ import { UserModule } from './user/user.module';
 import { ProfileModule } from './profile/profile.module';
 import { AuthModule } from './auth/auth.module';
 import dbConfig from './utils/config/databaseConfig';
-
+import * as Joi from 'joi';
 //test logger
 import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 
@@ -22,7 +22,15 @@ import { join } from 'path';
       renderPath: 'images',
       exclude: ['/api*'],
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: Joi.object({
+        ACCESS_TOKEN_KEY: Joi.string().required(),
+        ACCESS_TOKEN_DURATION: Joi.string().required(),
+        REFRESH_TOKEN_KEY: Joi.string().required(),
+        REFRESH_TOKEN_DURATION: Joi.string().required(),
+      }),
+    }),
     TypeOrmModule.forRoot({
       type: dbConfig.type,
       host: dbConfig.host,

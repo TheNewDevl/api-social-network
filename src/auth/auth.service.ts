@@ -16,6 +16,7 @@ import { UserRoleEnum } from 'src/utils/enums/roles.enum';
 import { UserRepository } from 'src/repositories/user.repository';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -66,19 +67,9 @@ export class AuthService {
       }
 
       if (user && isMatch) {
-        //Create payload token
-        const payload = {
-          id: user.id,
-          username: user.username,
-          roles: user.roles,
-        };
+        const token = this.getAccessToken(user);
 
-        const token = this.jwtService.sign(payload);
-        const refreshToken = this.jwtService.sign(payload, {
-          secret: this.configService.get('REFRESH_TOKEN_KEY'),
-          expiresIn: '1d',
-        });
-
+        const refreshToken = this.getRefreshToken(user);
         //hash refresh token
         const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
         //and save hash in db
@@ -87,9 +78,7 @@ export class AuthService {
 
         const { id, username, roles, hasProfile } = user;
 
-        response
-          .cookie('jwt', refreshToken, this.cookieOptions)
-          .cookie('id', user.id, this.cookieOptions);
+        response.cookie('jwt', refreshToken, this.cookieOptions);
 
         return {
           message: 'Identification réussie',
@@ -107,65 +96,38 @@ export class AuthService {
     }
   }
 
-  async refreshToken(req: Request, res: Response) {
-    const cookies = req.cookies;
-    if (!cookies?.jwt || !cookies?.id) {
-      throw new BadRequestException('Refresh token ou id manuant');
-    }
-    const refreshToken = cookies.jwt;
-    const userId = cookies.id;
+  async refreshToken(req: Request, res: Response, user: Partial<User>) {
+    try {
+      const refreshToken = req.cookies.jwt;
 
-    res.clearCookie('jtw', this.cookieOptions);
-    res.clearCookie('id', this.cookieOptions);
+      const dbUser = await this.userRepository.findOneUserById(user.id);
 
-    const dbUser = await this.userRepository.findOneUserById(userId);
+      const decodedRefreshToken = await bcrypt.compare(
+        refreshToken,
+        dbUser.hashedRefreshToken,
+      );
 
-    const decodedRefreshToken = await bcrypt.compare(
-      refreshToken,
-      dbUser.hashedRefreshToken,
-    );
+      if (!decodedRefreshToken) {
+        res.clearCookie('jtw', this.cookieOptions);
+        dbUser.hashedRefreshToken = '';
+        this.userRepository.saveUser(dbUser);
+        throw new UnauthorizedException("Ce token ne t'appartient pas ! ");
+      }
 
-    if (!decodedRefreshToken) {
-      throw new UnauthorizedException("Ce token ne t'appartient pas ! ");
-    }
+      const newRefreshToken = this.getRefreshToken(dbUser);
+      const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
-    const refTokenValidity = await this.jwtService.verify(
-      refreshToken,
-      this.configService.get('REFRESH_TOKEN_KEY'),
-    );
-
-    if (!refTokenValidity) {
-      dbUser.hashedRefreshToken = null;
+      //save new hashed refresh token in db
+      dbUser.hashedRefreshToken = hashedRefreshToken;
       await this.userRepository.saveUser(dbUser);
-      throw new UnauthorizedException('Refresh Token invalide');
+
+      const accessToken = this.getAccessToken(dbUser);
+
+      res.cookie('jwt', newRefreshToken, this.cookieOptions);
+      return { accessToken };
+    } catch (error) {
+      throw error;
     }
-
-    //Create payload token
-    const payload = {
-      id: dbUser.id,
-      username: dbUser.username,
-      roles: dbUser.roles,
-    };
-
-    const newRefreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get('REFRESH_TOKEN_KEY'),
-      expiresIn: '1d',
-    });
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    //and save hash in db
-    dbUser.hashedRefreshToken = hashedRefreshToken;
-    await this.userRepository.saveUser(dbUser);
-
-    const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get('ACCESS_TOKEN_KEY'),
-      expiresIn: this.configService.get('ACCESS_TOKEN_DURATION'),
-    });
-
-    res
-      .cookie('jwt', refreshToken, this.cookieOptions)
-      .cookie('id', dbUser.id, this.cookieOptions);
-
-    return { accessToken };
   }
 
   async logout(req: Request, res: Response) {
@@ -196,5 +158,36 @@ export class AuthService {
     } catch (error) {
       throw error;
     }
+  }
+
+  getRefreshToken(user: User) {
+    try {
+      const payload = {
+        id: user.id,
+        username: user.username,
+        roles: user.roles,
+      };
+
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: this.configService.get('REFRESH_TOKEN_KEY'),
+        expiresIn: this.configService.get('REFRESH_TOKEN_DURATION'),
+      });
+      return refreshToken;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  getAccessToken(user: User) {
+    const payload = {
+      id: user.id,
+      username: user.username,
+      roles: user.roles,
+    };
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('ACCESS_TOKEN_KEY'),
+      expiresIn: this.configService.get('ACCESS_TOKEN_DURATION'),
+    });
+    return accessToken;
   }
 }
