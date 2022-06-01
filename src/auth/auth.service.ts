@@ -123,36 +123,46 @@ export class AuthService {
 
       const accessToken = this.getAccessToken(dbUser);
 
+      const { id, username, roles, hasProfile } = dbUser;
+
       res.cookie('jwt', newRefreshToken, this.cookieOptions);
-      return { accessToken };
+
+      return {
+        message: 'Identification réussie',
+        user: {
+          id,
+          username,
+          roles,
+          hasProfile,
+          token: accessToken,
+        },
+      };
     } catch (error) {
       throw error;
     }
   }
 
-  async logout(req: Request, res: Response) {
+  async logout(req: Request, res: Response, user: Partial<User>) {
     try {
+      console.log(user);
+
       // if no jwt and id cookie, nothing to delete so return success
       const cookies = req.cookies;
-      if (!cookies?.jwt || !cookies?.id) {
+      if (!cookies?.jwt) {
         return { message: 'Pas de contenu dans la requête' };
       }
 
-      const userId = cookies.id;
-
       // if cant find the user, juste delete cookies and return success
-      const dbUser = await this.userRepository.findOneUserById(userId);
+      const dbUser = await this.userRepository.findOneUserById(user.id);
       if (!dbUser) {
-        res.clearCookie('jtw', this.cookieOptions);
-        res.clearCookie('id', this.cookieOptions);
+        res.clearCookie('jwt', this.cookieOptions);
         return {};
       }
 
       // i dont check if cookie token and db hash cookie matches because even if the token and the db token do not match, as a security measure i assume that the token or account is compromised and i still delete the token in the cookies and in the DB
       dbUser.hashedRefreshToken = null;
       await this.userRepository.saveUser(dbUser);
-      res.clearCookie('jtw', this.cookieOptions);
-      res.clearCookie('id', this.cookieOptions);
+      res.clearCookie('jwt', this.cookieOptions);
 
       return { message: 'logout effectué' };
     } catch (error) {

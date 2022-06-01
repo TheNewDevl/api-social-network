@@ -1,10 +1,10 @@
 import {
   ArgumentMetadata,
+  ForbiddenException,
   Inject,
   Injectable,
   PipeTransform,
   Scope,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import EntityOwnerInterface, {
@@ -28,7 +28,7 @@ export class EntityOwnerValidationPipe implements PipeTransform<any> {
       return value;
     }
     if (value.getUserId() !== this.request.user.id) {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         "Vous n'avez pas le droit d'effectuer cette action",
       );
     }
