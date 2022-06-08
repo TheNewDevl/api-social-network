@@ -1,9 +1,10 @@
 FROM node:gallium-buster-slim 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
-COPY src .
+COPY ./src /app/src
+COPY .env .
 COPY tsconfig*.json .
+RUN npm install
 RUN npm run build
-CMD [ "npm", "run", "start" ] 
-EXPOSE 3000
+EXPOSE 3636
+CMD ["node", "dist/main"]

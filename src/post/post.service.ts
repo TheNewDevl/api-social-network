@@ -46,6 +46,7 @@ export class PostService {
       const returnPost = {
         ...newPost,
         likes: [],
+        commentsCount: 0,
         user: {
           id,
           username,
@@ -53,7 +54,7 @@ export class PostService {
         },
       };
 
-      return { message: 'Publication enregistrée', post: returnPost };
+      return { message: 'Publication enregistrée', newPost: returnPost };
     } catch (error) {
       //if any error, unlink the image uploaded
       if (file) {
@@ -66,9 +67,18 @@ export class PostService {
   }
 
   /** Will return all posts with their user id and username */
-  async findAll({ limit, offset }) {
+  async findAll(queryParams) {
+    const offset = queryParams.offset;
+    const limit = queryParams.limit;
+
     try {
-      const posts = await this.postRepository.getAllPaginated(+offset, +limit);
+      const posts = !queryParams.user
+        ? await this.postRepository.getAllPaginated(+offset, +limit)
+        : await this.postRepository.getAllByUserPaginated(
+            +offset,
+            +limit,
+            queryParams.user,
+          );
       return posts;
     } catch (error) {
       throw error;
@@ -106,7 +116,7 @@ export class PostService {
       file && (post.image = imgUrl);
 
       const update = await this.postRepository.save(post);
-      return update;
+      return { updatedPost: update };
     } catch (error) {
       //if any error, unlink the image uploaded
       unlink(file.path, (err) => {
@@ -138,8 +148,10 @@ export class PostService {
     try {
       if (likePostDto.like === 'like') {
         await this.postRepository.addLike(id, user.id);
+        return { message: 'Like enregistré' };
       } else if (likePostDto.like === 'unlike') {
         await this.postRepository.removeLike(id, user.id);
+        return { message: 'Like supprimé' };
       } else {
         throw new BadRequestException('Valeur de like incorrecte !');
       }

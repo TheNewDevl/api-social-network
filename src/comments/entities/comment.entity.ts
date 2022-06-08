@@ -12,7 +12,10 @@ export class Comment extends TimestampEntity implements EntityOwnerInterface {
   @ManyToOne(() => Post, (post) => post.comments, { onDelete: 'CASCADE' })
   post: Post;
 
-  @ManyToOne(() => User, (user) => user.comments)
+  @Column()
+  userId: string;
+
+  @ManyToOne(() => User, (user) => user.comments, { onDelete: 'CASCADE' })
   user: User;
 
   @Column()
@@ -20,9 +23,6 @@ export class Comment extends TimestampEntity implements EntityOwnerInterface {
 
   @Column({ default: 0 })
   lastComment: number;
-
-  @Column()
-  userId: string;
 
   getUserId() {
     return this.userId;

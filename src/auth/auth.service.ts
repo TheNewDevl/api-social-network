@@ -152,6 +152,8 @@ export class AuthService {
         return { message: 'Pas de contenu dans la requête' };
       }
 
+      res.clearCookie('jwt', this.cookieOptions);
+
       // if cant find the user, juste delete cookies and return success
       const dbUser = await this.userRepository.findOneUserById(user.id);
       if (!dbUser) {

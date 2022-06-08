@@ -18,6 +18,7 @@ export class PostRepository extends Repository<Post> {
 
   /** Get paginated posts including likes, comments couts, and user */
   async getAllPaginated(offset: number, limit: number) {
+
     const [posts, countPosts] = await this.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
       .leftJoinAndSelect('user.profile', 'profile')
@@ -35,6 +36,45 @@ export class PostRepository extends Repository<Post> {
       ])
       .offset(offset)
       .limit(limit)
+      .getManyAndCount();
+
+    if (!posts) {
+      throw new BadRequestException(
+        'Il y a eu une erreur lors du chargement des données depuis le serveur',
+      );
+    }
+
+    //Join count comments for each post
+    for (const post of posts) {
+      const count = await this.manager
+        .createQueryBuilder()
+        .from('Comment', 'comment')
+        .where('comment.post = :post', { post: post.id })
+        .getCount();
+      post.commentsCount = count;
+    }
+    return [posts, countPosts];
+  }
+
+  async getAllByUserPaginated(offset: number, limit: number, id: string) {
+    const [posts, countPosts] = await this.createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .leftJoinAndSelect('post.likes', 'likes')
+      .orderBy('post.createdAt', 'DESC')
+      .select([
+        'likes.id',
+        'post.id',
+        'post.text',
+        'post.image',
+        'post.createdAt',
+        'user.id',
+        'user.username',
+        'profile.photo',
+      ])
+      .offset(offset)
+      .limit(limit)
+      .where('post.userId = :id', { id: id })
       .getManyAndCount();
 
     if (!posts) {

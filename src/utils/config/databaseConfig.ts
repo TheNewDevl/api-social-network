@@ -1,6 +1,11 @@
 const dbConfig = {
   get host(): string {
-    return this.getEnvValue('DB_HOST');
+    console.log(process.env.NODE_ENV);
+    if (process.env.NODE_ENV === 'development') {
+      return this.getEnvValue('DB_HOST_DEV');
+    } else {
+      return this.getEnvValue('DB_HOST_PROD');
+    }
   },
 
   get type(): 'mysql' {
