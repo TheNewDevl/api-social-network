@@ -1,10 +1,13 @@
+import { createMock } from '@golevelup/ts-jest';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Response } from 'express';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
 
+  const mockResponse = createMock<Response>();
   const mochAuthService = {
     signUp: jest.fn((dto) => {
       return {
@@ -64,7 +67,7 @@ describe('AuthController', () => {
       username: 'Test',
       password: 'password',
     };
-    expect(controller.login(loginData)).toEqual({
+    expect(controller.login(loginData, mockResponse)).toEqual({
       id: expect.any(String),
       username: 'Test',
       email: 'test@mail.fr',
@@ -73,6 +76,9 @@ describe('AuthController', () => {
       hasProfile: 0,
       createdAt: expect.any(String),
     });
-    expect(mochAuthService.loginUser).toHaveBeenCalledWith(loginData);
+    expect(mochAuthService.loginUser).toHaveBeenCalledWith(
+      loginData,
+      mockResponse,
+    );
   });
 });

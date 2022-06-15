@@ -54,7 +54,7 @@ export class PostService {
         },
       };
 
-      return { message: 'Publication enregistrée', newPost: returnPost };
+      return { post: returnPost };
     } catch (error) {
       //if any error, unlink the image uploaded
       if (file) {
@@ -116,7 +116,7 @@ export class PostService {
       file && (post.image = imgUrl);
 
       const update = await this.postRepository.save(post);
-      return { updatedPost: update };
+      return update;
     } catch (error) {
       //if any error, unlink the image uploaded
       unlink(file.path, (err) => {

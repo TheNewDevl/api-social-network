@@ -171,10 +171,10 @@ describe('PostService', () => {
       expect(returned.post.image).toBeUndefined();
     });
 
-    it('should return post and message  ', async () => {
+    it('should return post  ', async () => {
       expect(await service.create(file, createPostDto, user, req)).toEqual({
-        message: 'Publication enregistrée',
         post: {
+          commentsCount: 0,
           ...createPostDto,
           likes: [],
           user: {

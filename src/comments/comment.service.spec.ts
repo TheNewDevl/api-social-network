@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
 import { CommentRepository } from 'src/repositories/comment.repository';
-import { Repository } from 'typeorm';
 import { CommentService } from './comment.service';
 import { Comment } from './entities/comment.entity';
 
@@ -68,23 +67,24 @@ describe('CommentService', () => {
       id: '123',
     };
 
-    it('should call create method passing text property', async () => {
+    it('should call create method passing text and user ID', async () => {
       await service.create(createCommentDto, user);
       expect(mockCommmentRepo.create).toHaveBeenCalledWith({
         text: 'this is a comment',
+        userId: user.id,
       });
     });
 
     it('should call setUserRelation', async () => {
       expect(mockCommmentRepo.setUserRelation).toHaveBeenCalledWith(
-        { text: 'this is a comment' },
+        { text: 'this is a comment', userId: user.id },
         '123',
       );
     });
 
     it('should call setPostRelation', async () => {
       expect(mockCommmentRepo.setUserRelation).toHaveBeenCalledWith(
-        { text: 'this is a comment' },
+        { text: 'this is a comment', userId: user.id },
         '123',
       );
     });
@@ -151,7 +151,7 @@ describe('CommentService', () => {
     });
     it('sould return comments array', async () => {
       const comments = await service.findAllByPost(queryParams, postId);
-      expect(comments).toEqual(['comment1', 'comment2']);
+      expect(comments).toEqual({ comments: ['comment1', 'comment2'] });
     });
   });
 
@@ -177,7 +177,7 @@ describe('CommentService', () => {
 
     it('should return success message  ', async () => {
       const detele = await service.remove(comment);
-      expect(detele).toEqual({ message: 'Publication supprimée !' });
+      expect(detele).toEqual({ message: 'Commentaire supprimée !' });
     });
 
     it('should call deleteComment with comment id    ', async () => {

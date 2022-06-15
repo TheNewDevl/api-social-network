@@ -40,7 +40,7 @@ export class CommentService {
           id: createCommentDto.postId,
         },
       };
-      return { newComment: comment };
+      return comment;
     } catch (error) {
       throw error;
     }
@@ -66,7 +66,7 @@ export class CommentService {
         text: updateCommentDto.text,
         id: comment.id,
       };
-      return { updatedComment };
+      return updatedComment;
     } catch (error) {
       throw error;
     }
