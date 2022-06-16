@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { User } from 'src/user/entities/user.entity';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { unlink } from 'fs';
+import { unlinkSync } from 'fs';
 import { ProfileRepository } from 'src/repositories/profile.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { Profile } from './entities/profile.entity';
@@ -83,9 +83,11 @@ export class ProfileService {
       if (file) {
         if (profile.photo) {
           const filename = profile.photo.split(`${req.get('host')}/`)[1];
-          unlink(`images/${filename}`, (err) => {
-            console.log(err);
-          });
+          try {
+            unlinkSync(`images/${filename}`);
+          } catch (error) {
+            console.log(error);
+          }
         }
         const imgUrl = `${req.protocol}://${req.get('host')}/${file.filename}`;
         newProfile.photo = imgUrl;
@@ -96,11 +98,11 @@ export class ProfileService {
       return { message: 'Profil modifié !' };
     } catch (error) {
       //if any error, unlink the image uploaded
-      unlink(file.path, (err) => {
-        if (err) {
-          console.log(err);
-        }
-      });
+      try {
+        unlinkSync(file.path);
+      } catch (error) {
+        console.log(error);
+      }
       throw error;
     }
   }

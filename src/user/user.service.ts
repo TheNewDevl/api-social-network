@@ -12,6 +12,7 @@ export class UserService {
   async findOne(id: string) {
     try {
       const user = await this.userRepository.findOneUserById(id);
+      delete user.hashedRefreshToken;
       return user;
     } catch (error) {
       throw error;

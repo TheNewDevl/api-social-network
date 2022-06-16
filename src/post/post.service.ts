@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
-import { unlink } from 'fs';
+import { unlinkSync } from 'fs';
 import { User } from 'src/user/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { LikePostDto } from './dto/like-post.dto';
@@ -58,9 +58,11 @@ export class PostService {
     } catch (error) {
       //if any error, unlink the image uploaded
       if (file) {
-        unlink(file.path, (err) => {
-          console.log(err);
-        });
+        try {
+          unlinkSync(file.path);
+        } catch (error) {
+          console.log(error);
+        }
       }
       throw error;
     }
@@ -104,9 +106,11 @@ export class PostService {
       //lets retrive the img url and delete it from storage
       if (file && post.image) {
         const filename = post.image.split(`${req.get('host')}/`)[1];
-        unlink(`images/${filename}`, (err) => {
-          console.log(err);
-        });
+        try {
+          unlinkSync(`images/${filename}`);
+        } catch (error) {
+          console.log(error);
+        }
       }
 
       const imgUrl = file
@@ -119,11 +123,11 @@ export class PostService {
       return update;
     } catch (error) {
       //if any error, unlink the image uploaded
-      unlink(file.path, (err) => {
-        if (err) {
-          console.log(err);
-        }
-      });
+      try {
+        unlinkSync(file.path);
+      } catch (error) {
+        console.log(error);
+      }
       throw new BadRequestException(error);
     }
   }
@@ -134,9 +138,11 @@ export class PostService {
       //if post contains a photo retrive the filename and detele it
       if (post.image) {
         const filename = post.image.split(`${req.get('host')}/`)[1];
-        unlink(`images/${filename}`, (err) => {
-          console.log(err);
-        });
+        try {
+          unlinkSync(`images/${filename}`);
+        } catch (error) {
+          console.log(error);
+        }
       }
       return { message: 'Publication supprimée !' };
     } catch (error) {

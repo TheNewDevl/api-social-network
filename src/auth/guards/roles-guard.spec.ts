@@ -39,7 +39,6 @@ describe('Roles Guard', () => {
   });
 
   it('should return true if no roles required', async () => {
-    console.log(mockContext.getHandler());
     expect(await guard.canActivate(mockContext)).toBeTruthy();
   });
 
@@ -53,8 +52,6 @@ describe('Roles Guard', () => {
     try {
       await guard.canActivate(mockContext, [UserRoleEnum.USER]);
     } catch (error) {
-      console.log(error.status);
-
       expect(error.status).toEqual(401);
       expect(error.message).toContain(
         "Vous n'avez pas le droit d'effectuer cette action",

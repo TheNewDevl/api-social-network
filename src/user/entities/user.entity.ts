@@ -39,7 +39,7 @@ export class User extends TimestampEntity implements EntityOwnerInterface {
   password: string;
 
   @Column({
-    type: 'enum',
+    type: 'simple-enum',
     enum: UserRoleEnum,
     default: UserRoleEnum.USER,
   })

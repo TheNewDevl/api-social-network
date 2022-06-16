@@ -96,7 +96,6 @@ export class AuthService {
   async refreshToken(req: Request, res: Response, user: Partial<User>) {
     try {
       const refreshToken = req.cookies.jwt;
-
       const dbUser = await this.userRepository.findOneUserById(user.id);
 
       const decodedRefreshToken = await bcrypt.compare(
@@ -140,51 +139,41 @@ export class AuthService {
   }
 
   async logout(req: Request, res: Response, user: Partial<User>) {
-    try {
-      console.log(user);
-
-      // if no jwt and id cookie, nothing to delete so return success
-      const cookies = req.cookies;
+    // **** Actually if there is not cookie, guard will return 401 ****
+    /* const cookies = req.cookies;
       if (!cookies?.jwt) {
         return { message: 'Pas de contenu dans la requête' };
       }
+      */
 
+    // if cant find the user, juste delete cookies and return success
+    try {
       res.clearCookie('jwt', this.cookieOptions);
-
-      // if cant find the user, juste delete cookies and return success
       const dbUser = await this.userRepository.findOneUserById(user.id);
-      if (!dbUser) {
-        res.clearCookie('jwt', this.cookieOptions);
-        return {};
-      }
-
       // i dont check if cookie token and db hash cookie matches because even if the token and the db token do not match, as a security measure i assume that the token or account is compromised and i still delete the token in the cookies and in the DB
-      dbUser.hashedRefreshToken = null;
+      dbUser.hashedRefreshToken = '';
       await this.userRepository.saveUser(dbUser);
       res.clearCookie('jwt', this.cookieOptions);
 
       return { message: 'logout effectué' };
     } catch (error) {
-      throw error;
+      res.clearCookie('jwt', this.cookieOptions);
+      return {};
     }
   }
 
   getRefreshToken(user: User) {
-    try {
-      const payload = {
-        id: user.id,
-        username: user.username,
-        roles: user.roles,
-      };
+    const payload = {
+      id: user.id,
+      username: user.username,
+      roles: user.roles,
+    };
 
-      const refreshToken = this.jwtService.sign(payload, {
-        secret: this.configService.get('REFRESH_TOKEN_KEY'),
-        expiresIn: this.configService.get('REFRESH_TOKEN_DURATION'),
-      });
-      return refreshToken;
-    } catch (error) {
-      throw error;
-    }
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('REFRESH_TOKEN_KEY'),
+      expiresIn: this.configService.get('REFRESH_TOKEN_DURATION'),
+    });
+    return refreshToken;
   }
 
   getAccessToken(user: User) {

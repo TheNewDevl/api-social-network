@@ -2,11 +2,9 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
   Post,
   Req,
   Res,
-  UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -14,7 +12,6 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { LoginUserDto } from 'src/user/dto/login-user.dto';
 import { User } from 'src/user/entities/user.entity';
 import { reqUser } from 'src/utils/decorators/user.decorator';
-import { HttpExceptionFilter } from 'src/utils/unauthorized.filter';
 import { AuthService } from './auth.service';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
@@ -36,7 +33,6 @@ export class AuthController {
   }
 
   @UseGuards(JwtRefreshGuard)
-  // @UseFilters(new HttpExceptionFilter())
   @Get('refresh')
   refreshToken(
     @Req() req: Request,

@@ -26,7 +26,6 @@ export class UserRepository extends Repository<User> {
       );
 
     delete user.password;
-
     return user;
   }
 

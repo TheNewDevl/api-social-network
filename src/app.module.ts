@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommentModule } from './comments/comment.module';
 import { PostModule } from './post/post.module';
@@ -14,6 +14,10 @@ import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { LoggerMiddleware } from './utils/logger';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { User } from './user/entities/user.entity';
+import { Comment } from './comments/entities/comment.entity';
+import { Post } from './post/entities/post.entity';
+import { Profile } from './profile/entities/profile.entity';
 
 @Module({
   imports: [
@@ -31,16 +35,28 @@ import { join } from 'path';
         REFRESH_TOKEN_DURATION: Joi.string().required(),
       }),
     }),
-    TypeOrmModule.forRoot({
-      type: dbConfig.type,
-      host: dbConfig.host,
-      port: dbConfig.port,
-      username: dbConfig.username,
-      password: dbConfig.password,
-      database: dbConfig.name,
-      entities: ['dist/**/*.entity{.ts,.js}'],
-      logging: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => {
+        if (process.env.NODE_ENV === 'test') {
+          return {
+            type: 'sqlite',
+            database: ':memory:',
+            entities: [User, Comment, Post, Profile],
+            synchronize: true,
+          };
+        }
+        return {
+          type: dbConfig.type,
+          host: dbConfig.host,
+          port: dbConfig.port,
+          username: dbConfig.username,
+          password: dbConfig.password,
+          database: dbConfig.name,
+          entities: ['dist/**/*.entity{.ts,.js}'],
+          logging: true,
+          synchronize: true,
+        };
+      },
     }),
     AuthModule,
     CommentModule,

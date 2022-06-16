@@ -14,6 +14,7 @@ import { Post } from './entities/post.entity';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { LikePostDto } from './dto/like-post.dto';
 
+console.log = jest.fn();
 describe('PostService', () => {
   let service: PostService;
 
@@ -153,7 +154,7 @@ describe('PostService', () => {
     });
 
     it('should throw error', async () => {
-      jest.spyOn(fs, 'unlink').mockReset();
+      jest.spyOn(fs, 'unlinkSync').mockReset();
       try {
         const emptyCreatePostDto = new CreatePostDto();
         const fail = await service.create(file2, emptyCreatePostDto, user, req);
@@ -271,15 +272,15 @@ describe('PostService', () => {
 
     it('should retrieve filename and call unlink ', async () => {
       post1.image = 'http://localhost/funny.jpg';
-      const unlinkSpy = jest.spyOn(fs, 'unlink');
-      const post = await service.update(post1, updatePostDto, file2, req);
+      const unlinkSpy = jest.spyOn(fs, 'unlinkSync');
+      await service.update(post1, updatePostDto, file2, req);
       expect(unlinkSpy).toHaveBeenCalled();
       unlinkSpy.mockClear();
     });
 
     it('shouldreturn post including image url  ', async () => {
       post1.image = 'http://localhost/funny.jpg';
-      const unlinkSpy = jest.spyOn(fs, 'unlink');
+      const unlinkSpy = jest.spyOn(fs, 'unlinkSync');
       const post = await service.update(post1, updatePostDto, file2, req);
 
       expect(post).toEqual({
@@ -309,7 +310,7 @@ describe('PostService', () => {
 
   describe('delete', () => {
     post2.image = 'http://localhost/superfunny.jpg';
-    const unlinkSpy = jest.spyOn(fs, 'unlink').mockReset();
+    const unlinkSpy = jest.spyOn(fs, 'unlinkSync').mockReset();
 
     it('should return message ', async () => {
       const deletion = await service.remove(post2, req);

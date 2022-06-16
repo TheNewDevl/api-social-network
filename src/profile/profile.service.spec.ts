@@ -10,8 +10,8 @@ import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Profile } from './entities/profile.entity';
 import { ProfileService } from './profile.service';
-import * as fs from 'fs';
 
+console.log = jest.fn();
 describe('ProfileService', () => {
   let service: ProfileService;
 
@@ -183,12 +183,7 @@ describe('ProfileService', () => {
       const user4 = new User();
       user4.id = '555';
       try {
-        const profile = await service.create(
-          file2,
-          createProfileDto,
-          user4,
-          req,
-        );
+        await service.create(file2, createProfileDto, user4, req);
       } catch (error) {
         expect(error.status).toEqual(404);
       }
@@ -229,7 +224,7 @@ describe('ProfileService', () => {
 
     it('sould throw error ', async () => {
       try {
-        const profile = await service.findOne('5');
+        await service.findOne('5');
       } catch (error) {
         expect(error.status).toEqual(404);
       }
@@ -257,8 +252,7 @@ describe('ProfileService', () => {
     });
 
     it('should replace img url ', async () => {
-      const unlinkSpy = jest.spyOn(fs, 'unlink');
-      const up = await service.update(profile2, updateProfileDto, file2, req);
+      await service.update(profile2, updateProfileDto, file2, req);
       expect(mockRepoProfile.updateProfile).toHaveBeenCalledWith(
         {
           bio: 'new bio ',
@@ -271,10 +265,9 @@ describe('ProfileService', () => {
     });
 
     it('should throw error', async () => {
-      const unlinkSpy = jest.spyOn(fs, 'unlink');
       const profile3 = new Profile();
       try {
-        const up = await service.update(profile3, updateProfileDto, file2, req);
+        await service.update(profile3, updateProfileDto, file2, req);
       } catch (error) {
         expect(error.status).toEqual(404);
       }

@@ -30,8 +30,6 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
     ),
   ) {
-    console.log(requiredRoles);
-
     if (!requiredRoles) {
       return true;
     }
@@ -39,7 +37,6 @@ export class RolesGuard implements CanActivate {
     //extract user and params  from request
     const { user } = context.switchToHttp().getRequest();
     const isAdmin = requiredRoles.some((role) => user.roles?.includes(role));
-    console.log('is admin ? ' + isAdmin);
     if (isAdmin) {
       return true;
     }
@@ -49,9 +46,7 @@ export class RolesGuard implements CanActivate {
     const tokenUserId = user.id;
     const paramId = params.id;
 
-    console.log(route.path);
-    console.log('token user : ', tokenUserId);
-    console.log('param id request: ', paramId);
+
 
     const checkProperty = async (repository, builderParam) => {
       const targetData = await repository
