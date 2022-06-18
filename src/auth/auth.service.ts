@@ -71,7 +71,7 @@ export class AuthService {
         const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
         //and save hash in db
         user.hashedRefreshToken = hashedRefreshToken;
-        await this.userRepository.saveUser(user);
+        await this.userRepository.save(user);
 
         const { id, username, roles, hasProfile } = user;
 
@@ -106,7 +106,7 @@ export class AuthService {
       if (!decodedRefreshToken) {
         res.clearCookie('jtw', this.cookieOptions);
         dbUser.hashedRefreshToken = '';
-        this.userRepository.saveUser(dbUser);
+        this.userRepository.save(dbUser);
         throw new UnauthorizedException("Ce token ne t'appartient pas ! ");
       }
 
@@ -115,7 +115,7 @@ export class AuthService {
 
       //save new hashed refresh token in db
       dbUser.hashedRefreshToken = hashedRefreshToken;
-      await this.userRepository.saveUser(dbUser);
+      await this.userRepository.save(dbUser);
 
       const accessToken = this.getAccessToken(dbUser);
 
@@ -152,7 +152,7 @@ export class AuthService {
       const dbUser = await this.userRepository.findOneUserById(user.id);
       // i dont check if cookie token and db hash cookie matches because even if the token and the db token do not match, as a security measure i assume that the token or account is compromised and i still delete the token in the cookies and in the DB
       dbUser.hashedRefreshToken = '';
-      await this.userRepository.saveUser(dbUser);
+      await this.userRepository.save(dbUser);
       res.clearCookie('jwt', this.cookieOptions);
 
       return { message: 'logout effectué' };

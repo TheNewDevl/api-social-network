@@ -1,36 +1,30 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseInterceptors,
-  UploadedFile,
-  Req,
-  UseGuards,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { PostService } from './post.service';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { reqUser } from 'src/utils/decorators/user.decorator';
-import { User } from 'src/user/entities/user.entity';
 import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { diskStorage } from 'multer';
-import {
-  customFileName,
-  fileFilter,
-  limits,
-} from 'src/utils/config/multerConfig';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { LikePostDto } from './dto/like-post.dto';
 import { EntityConverterPipe } from 'src/pipes/app.entityConverter.pipe';
-import { Post as PostEntity } from './entities/post.entity';
 import { EntityOwnerValidationPipe } from 'src/pipes/app.entityOwnerValidation.pipe';
+import { User } from 'src/user/entities/user.entity';
+import { reqUser } from 'src/utils/decorators/user.decorator';
+import { CreatePostDto } from './dto/create-post.dto';
+import { LikePostDto } from './dto/like-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { Post as PostEntity } from './entities/post.entity';
+import { PostService } from './post.service';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard, RolesGuard)

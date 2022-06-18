@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { User } from 'src/user/entities/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 
@@ -39,23 +39,5 @@ export class UserRepository extends Repository<User> {
       throw new NotFoundException('Utilisateur introuvable');
     }
     return user;
-  }
-
-  async saveUser(userEntity: User) {
-    const user = this.save(userEntity);
-    if (!user) {
-      throw new BadRequestException(
-        "Il y a eu une erreur lors de l'enregistrement du profil !",
-      );
-    }
-    return user;
-  }
-
-  async deleteUser(id: string) {
-    const deletion = await this.delete(id);
-    if (deletion.affected === 0) {
-      throw new NotFoundException("Cet utilisateur n'a pas été retrouvé");
-    }
-    return deletion;
   }
 }

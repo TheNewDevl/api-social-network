@@ -1,6 +1,6 @@
-import { Matches } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class LikePostDto {
-  @Matches(/like/ || /unlike/)
+  @IsString()
   like: string;
 }

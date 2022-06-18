@@ -51,7 +51,7 @@ describe('PostService', () => {
   });
 
   const mockPostRepository = createMock<PostRepository>({
-    savePost: jest.fn().mockImplementation((post) => {
+    save: jest.fn().mockImplementation((post) => {
       if (!post.text) {
         throw new BadRequestException(
           'Il y a eu une erreur lors de la création de la publication',
@@ -77,14 +77,8 @@ describe('PostService', () => {
         return Promise.resolve(post);
       }
     }),
-    save: jest.fn().mockImplementation((post) => {
-      if (!post.text) {
-        throw new Error('error');
-      } else {
-        return post;
-      }
-    }),
-    deletePost: jest.fn().mockImplementation((id) => {
+
+    delete: jest.fn().mockImplementation((id) => {
       const deletion = {
         raw: '',
         affected: 0,
@@ -154,7 +148,6 @@ describe('PostService', () => {
     });
 
     it('should throw error', async () => {
-      jest.spyOn(fs, 'unlinkSync').mockReset();
       try {
         const emptyCreatePostDto = new CreatePostDto();
         const fail = await service.create(file2, emptyCreatePostDto, user, req);
@@ -193,9 +186,9 @@ describe('PostService', () => {
       );
     });
 
-    it('should call savePostMethod passing the created post containing data and user', async () => {
-      expect(mockPostRepository.savePost).toBeCalledTimes(4);
-      expect(mockPostRepository.savePost).toBeCalledWith({
+    it('should call saveMethod passing the created post containing data and user', async () => {
+      expect(mockPostRepository.save).toBeCalledTimes(4);
+      expect(mockPostRepository.save).toBeCalledWith({
         text: 'hello this is a post',
         user: {
           id: '12345',
@@ -266,21 +259,12 @@ describe('PostService', () => {
       expect(post).toEqual({ id: '1', text: 'update text ' });
     });
     it('should should call save method ', async () => {
-      expect(mockPostRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockPostRepository.save).toHaveBeenCalledTimes(5);
       expect(mockPostRepository.save).toHaveBeenCalledWith(post1);
-    });
-
-    it('should retrieve filename and call unlink ', async () => {
-      post1.image = 'http://localhost/funny.jpg';
-      const unlinkSpy = jest.spyOn(fs, 'unlinkSync');
-      await service.update(post1, updatePostDto, file2, req);
-      expect(unlinkSpy).toHaveBeenCalled();
-      unlinkSpy.mockClear();
     });
 
     it('shouldreturn post including image url  ', async () => {
       post1.image = 'http://localhost/funny.jpg';
-      const unlinkSpy = jest.spyOn(fs, 'unlinkSync');
       const post = await service.update(post1, updatePostDto, file2, req);
 
       expect(post).toEqual({
@@ -288,7 +272,6 @@ describe('PostService', () => {
         image: 'http://localhost/cutedogs.jpg',
         text: 'update text ',
       });
-      unlinkSpy.mockClear();
     });
 
     it(' should call save method with new file name  ', async () => {
@@ -310,7 +293,6 @@ describe('PostService', () => {
 
   describe('delete', () => {
     post2.image = 'http://localhost/superfunny.jpg';
-    const unlinkSpy = jest.spyOn(fs, 'unlinkSync').mockReset();
 
     it('should return message ', async () => {
       const deletion = await service.remove(post2, req);
@@ -318,12 +300,8 @@ describe('PostService', () => {
     });
 
     it('should should call service givent post id ', () => {
-      expect(mockPostRepository.deletePost).toHaveBeenCalledTimes(1);
-      expect(mockPostRepository.deletePost).toHaveBeenCalledWith(post2.id);
-    });
-
-    it('should should call unlink ', () => {
-      expect(unlinkSpy).toHaveBeenCalledTimes(3);
+      expect(mockPostRepository.delete).toHaveBeenCalledTimes(1);
+      expect(mockPostRepository.delete).toHaveBeenCalledWith(post2.id);
     });
 
     it('should throw error ', async () => {

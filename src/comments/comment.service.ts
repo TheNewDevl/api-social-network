@@ -19,7 +19,7 @@ export class CommentService {
         userId: user.id,
       });
 
-      const savedComment = await this.commentRepository.saveComment(newComment);
+      const savedComment = await this.commentRepository.save(newComment);
       //Set relations
       await this.commentRepository.setUserRelation(newComment, user.id);
       await this.commentRepository.setPostRelation(
@@ -61,7 +61,7 @@ export class CommentService {
 
   async update(comment: Partial<Comment>, updateCommentDto: UpdateCommentDto) {
     try {
-      await this.commentRepository.updateById(comment.id, updateCommentDto);
+      await this.commentRepository.update({ id: comment.id }, comment);
       const updatedComment = {
         text: updateCommentDto.text,
         id: comment.id,
@@ -74,7 +74,7 @@ export class CommentService {
 
   async remove(comment: Comment) {
     try {
-      await this.commentRepository.deleteComment(comment.id);
+      await this.commentRepository.delete({ id: comment.id });
       return { message: 'Commentaire supprimée !' };
     } catch (error) {
       throw error;

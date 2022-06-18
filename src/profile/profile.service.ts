@@ -43,9 +43,16 @@ export class ProfileService {
       //save profile
       const profile = await this.profileRepository.saveProfile(newProfile);
       dbUser.hasProfile = 1;
-      await this.userRepository.saveUser(dbUser);
+      await this.userRepository.save(dbUser);
       return { message: 'Profil sauvegardé', profile };
     } catch (error) {
+      if (file) {
+        try {
+          unlinkSync(file.path);
+        } catch (error) {
+          console.log(error);
+        }
+      }
       throw error;
     }
   }

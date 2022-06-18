@@ -53,8 +53,8 @@ describe('AppController (e2e)', () => {
   });
 
   afterAll(async () => {
-    rmSync(`testImages`, { recursive: true });
     await app.close();
+    rmSync(`testImages`, { recursive: true });
   });
 
   describe('PROFILE MODULE (e2e)', () => {

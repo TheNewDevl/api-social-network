@@ -1,17 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { Comment } from 'src/comments/entities/comment.entity';
+import { Post } from 'src/post/entities/post.entity';
 import { EntityRepository, Repository } from 'typeorm';
 
 @EntityRepository(Comment)
 export class CommentRepository extends Repository<Comment> {
-  async saveComment(newComment: Comment) {
-    const comment = await this.save(newComment);
-    if (!comment) {
-      throw new BadRequestException('Echec de la création du commentaire !');
-    }
-    return comment;
-  }
-
   //set user relation
   async setUserRelation(savedComment: Comment, userId: string) {
     await this.createQueryBuilder()
@@ -22,18 +15,20 @@ export class CommentRepository extends Repository<Comment> {
 
   /**Check if post exist and set relation */
   async setPostRelation(savedComment: Comment, postId: string) {
-    //check if post really exists in DB
-    const post = this.manager
-      .createQueryBuilder()
-      .from('Post', 'post')
-      .where('post.id = :id', { id: postId });
-    if (!post) {
-      throw new BadRequestException('Publication associée introuvable');
+    try {
+      //check if post really exists in DB
+      await this.manager.findOne(Post, {
+        id: postId,
+      });
+
+      //set relation
+      await this.createQueryBuilder()
+        .relation(Comment, 'post')
+        .of(savedComment)
+        .set(postId);
+    } catch (error) {
+      throw new BadRequestException('Publication associée introuvable.', error);
     }
-    await this.createQueryBuilder()
-      .relation(Comment, 'post')
-      .of(savedComment)
-      .set(postId);
   }
 
   async findPaginatedCommentByPost(
@@ -41,47 +36,31 @@ export class CommentRepository extends Repository<Comment> {
     limit: number,
     postId: string,
   ) {
-    const comments = await this.createQueryBuilder('comment')
-      .leftJoinAndSelect('comment.user', 'commentUser')
-      .leftJoinAndSelect('commentUser.profile', 'userprofile')
-      .leftJoinAndSelect('comment.post', 'post')
-      .select([
-        'comment.createdAt',
-        'comment.text',
-        'comment.id',
-        'commentUser.id',
-        'commentUser.username',
-        'post.id',
-        'userprofile.photo',
-      ])
-      .orderBy('comment.createdAt', 'DESC')
-      .offset(offset)
-      .limit(limit)
-      .where(`comment.postId = :postId`, { postId })
-      .getManyAndCount();
-    if (!comments) {
+    try {
+      const comments = await this.createQueryBuilder('comment')
+        .leftJoinAndSelect('comment.user', 'commentUser')
+        .leftJoinAndSelect('commentUser.profile', 'userprofile')
+        .leftJoinAndSelect('comment.post', 'post')
+        .select([
+          'comment.createdAt',
+          'comment.text',
+          'comment.id',
+          'commentUser.id',
+          'commentUser.username',
+          'post.id',
+          'userprofile.photo',
+        ])
+        .orderBy('comment.createdAt', 'DESC')
+        .offset(offset)
+        .limit(limit)
+        .where(`comment.postId = :postId`, { postId })
+        .getManyAndCount();
+      return comments;
+    } catch (error) {
       throw new BadRequestException(
         'Il y a eu une erreur lors de la récupération des commmentaires.',
+        error,
       );
-    }
-    return comments;
-  }
-
-  /**update comment using comment id */
-  async updateById(commentId: string, comment: Partial<Comment>) {
-    const updatedComment = await this.update({ id: commentId }, comment);
-    if (!updatedComment) {
-      throw new BadRequestException('Erreur durant la mise à jour !');
-    }
-    console.log(updatedComment);
-
-    return updatedComment;
-  }
-  /** delete comment using comment id  */
-  async deleteComment(commentId: string) {
-    const deletion = await this.delete({ id: commentId });
-    if (deletion.affected === 0) {
-      throw new BadRequestException('Suppression du post impossible');
     }
   }
 }

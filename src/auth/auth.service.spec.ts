@@ -24,11 +24,6 @@ describe('AuthService', () => {
       .mockImplementation((user) =>
         Promise.resolve({ id: randomUUID(), ...user }),
       ),
-    saveUser: jest
-      .fn()
-      .mockImplementation((user) =>
-        Promise.resolve({ id: randomUUID(), ...user }),
-      ),
     findUserByUsername: jest.fn().mockImplementation((loginUserDto) => {
       const users = [
         {

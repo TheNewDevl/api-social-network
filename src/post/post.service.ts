@@ -41,7 +41,7 @@ export class PostService {
       file && (post.image = imgUrl);
 
       //save the post in the DB and return some data from the post created and the user
-      const newPost = await this.postRepository.savePost(post);
+      const newPost = await this.postRepository.save(post);
       const { id, username } = user;
       const returnPost = {
         ...newPost,
@@ -57,13 +57,12 @@ export class PostService {
       return { post: returnPost };
     } catch (error) {
       //if any error, unlink the image uploaded
-      if (file) {
-        try {
-          unlinkSync(file.path);
-        } catch (error) {
-          console.log(error);
-        }
+      try {
+        unlinkSync(file.path);
+      } catch (error) {
+        console.log(error);
       }
+
       throw error;
     }
   }
@@ -134,7 +133,7 @@ export class PostService {
 
   async remove(post: Post, req: Request) {
     try {
-      await this.postRepository.deletePost(post.id);
+      await this.postRepository.delete(post.id);
       //if post contains a photo retrive the filename and detele it
       if (post.image) {
         const filename = post.image.split(`${req.get('host')}/`)[1];

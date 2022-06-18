@@ -1,4 +1,4 @@
-import {
+/* import {
   ExceptionFilter,
   Catch,
   ArgumentsHost,
@@ -21,3 +21,4 @@ export class HttpExceptionFilter implements ExceptionFilter {
     });
   }
 }
+ */

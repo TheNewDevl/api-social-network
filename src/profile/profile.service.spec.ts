@@ -98,7 +98,7 @@ describe('ProfileService', () => {
       }
     }),
 
-    saveUser: jest.fn(),
+    save: jest.fn(),
   });
 
   beforeEach(async () => {
@@ -157,14 +157,14 @@ describe('ProfileService', () => {
         user: { hasProfile: 1, id: '1' },
       });
 
-      expect(mockRepoUser.saveUser).toHaveBeenCalledTimes(1);
-      expect(mockRepoUser.saveUser).toHaveBeenCalledWith({
+      expect(mockRepoUser.save).toHaveBeenCalledTimes(1);
+      expect(mockRepoUser.save).toHaveBeenCalledWith({
         hasProfile: 1,
         id: '1',
       });
 
       mockRepoUser.findOneUserById.mockClear();
-      mockRepoUser.saveUser.mockClear();
+      mockRepoUser.save.mockClear();
       mockRepoProfile.create.mockClear();
       mockRepoProfile.saveProfile.mockClear();
     });

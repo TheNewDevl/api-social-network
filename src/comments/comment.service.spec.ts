@@ -15,7 +15,7 @@ describe('CommentService', () => {
     create: jest.fn((text) => {
       return { ...text };
     }),
-    saveComment: jest.fn((object) => {
+    save: jest.fn((object) => {
       return {
         id: randomUUID(),
         ...object,
@@ -39,8 +39,11 @@ describe('CommentService', () => {
       .fn()
       .mockResolvedValue(['comment1', 'comment2']),
 
-    updateById: jest.fn().mockReturnValue(''),
-    deleteComment: jest.fn(),
+    update: jest
+      .fn()
+      .mockImplementationOnce(() => Promise.reject('error'))
+      .mockReturnValue(''),
+    delete: jest.fn().mockImplementationOnce(() => Promise.reject('error')),
   };
   //////////
   beforeEach(async () => {
@@ -157,32 +160,45 @@ describe('CommentService', () => {
 
   describe('update', () => {
     const comment = new Comment();
+    comment.id = '123';
     const updateCommentDto = { text: 'update text' };
+
+    it('should throw ', async () => {
+      try {
+        const updated = await service.update(comment, updateCommentDto);
+        expect(updated).toBeUndefined();
+      } catch (error) {
+        expect(error).toEqual('error');
+      }
+    });
 
     it('should return updated text ', async () => {
       const updated = await service.update(comment, updateCommentDto);
-      expect(updated).toEqual(updateCommentDto);
+      expect(updated).toEqual({ id: comment.id, text: updateCommentDto.text });
     });
-    it('should call updateById   ', async () => {
-      expect(mockCommmentRepo.updateById).toHaveBeenCalledTimes(1);
-      expect(mockCommmentRepo.updateById).toHaveBeenCalledWith(
-        comment.id,
-        updateCommentDto,
-      );
+    it('should call update   ', async () => {
+      expect(mockCommmentRepo.update).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('remove', () => {
     const comment = new Comment();
-
+    it('should throw ', async () => {
+      try {
+        const detele = await service.remove(comment);
+        expect(detele).toBeUndefined();
+      } catch (error) {
+        expect(error).toEqual('error');
+      }
+    });
     it('should return success message  ', async () => {
       const detele = await service.remove(comment);
       expect(detele).toEqual({ message: 'Commentaire supprimée !' });
     });
 
-    it('should call deleteComment with comment id    ', async () => {
-      expect(mockCommmentRepo.deleteComment).toHaveBeenCalledTimes(1);
-      expect(mockCommmentRepo.deleteComment).toHaveBeenCalledWith(comment.id);
+    it('should call delete with comment id    ', async () => {
+      expect(mockCommmentRepo.delete).toHaveBeenCalledTimes(2);
+      expect(mockCommmentRepo.delete).toHaveBeenCalledWith({ id: comment.id });
     });
   });
 });
