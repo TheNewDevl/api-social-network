@@ -42,7 +42,6 @@ export class ProfileService {
 
       //save profile
       const profile = await this.profileRepository.saveProfile(newProfile);
-
       dbUser.hasProfile = 1;
       await this.userRepository.saveUser(dbUser);
       return { message: 'Profil sauvegardé', profile };
@@ -61,6 +60,7 @@ export class ProfileService {
 
   async findOne(id: string) {
     try {
+      // Be carefull, use the user id to retrive the profile, not de profile id
       return await this.profileRepository.getProfileIncludingPosts(id);
     } catch (error) {
       throw error;
@@ -94,7 +94,6 @@ export class ProfileService {
       }
 
       await this.profileRepository.updateProfile(newProfile, profile.id);
-
       return { message: 'Profil modifié !' };
     } catch (error) {
       //if any error, unlink the image uploaded

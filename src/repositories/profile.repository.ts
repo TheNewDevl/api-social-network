@@ -1,4 +1,8 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Profile } from 'src/profile/entities/profile.entity';
 import { EntityRepository, Repository } from 'typeorm';
 
@@ -6,18 +10,18 @@ import { EntityRepository, Repository } from 'typeorm';
 export class ProfileRepository extends Repository<Profile> {
   /** save a complete profile that already includes user relation */
   async saveProfile(newProfile: Profile) {
-    const profile = await this.save(newProfile);
-    delete profile.user;
-    if (!profile) {
-      throw new BadRequestException(
-        "Il y a eu une problème lors de l'enregistrement du profil !",
-      );
+    try {
+      const profile = await this.save(newProfile);
+      delete profile.user;
+      return profile;
+    } catch (error) {
+      throw new ConflictException('Le profil a déjà été créé');
     }
-    return profile;
   }
 
   /** Return all profiles, no pagination */
   async findAllProfiles() {
+    // can not fail, will return an empty array if no profiles
     const profiles = await this.createQueryBuilder('profile')
       .leftJoinAndSelect('profile.user', 'user')
       .select([
@@ -28,18 +32,12 @@ export class ProfileRepository extends Repository<Profile> {
         'profile.photo',
       ])
       .getMany();
-
-    if (!profiles) {
-      throw new BadRequestException(
-        'Il y a eu une erreur lors de la récupération des profils',
-      );
-    }
     return profiles;
   }
 
-  /** return a sigle profile including the user and his posts */
+  /**Find profile using user Id return a sigle profile including the user and his posts */
   async getProfileIncludingPosts(id: string) {
-    const profile = this.createQueryBuilder('profile')
+    const profile = await this.createQueryBuilder('profile')
       .leftJoinAndSelect('profile.user', 'user')
       .leftJoinAndSelect('user.posts', 'posts')
       .select([
@@ -61,30 +59,18 @@ export class ProfileRepository extends Repository<Profile> {
     return profile;
   }
 
-  /** Find profile using user Id */
-  async findProfileByUserID(id: string) {
-    const profile = await this.findOne({
-      where: {
-        user: id,
-      },
-    });
-    if (!profile) {
-      throw new NotFoundException('Profil Introuvable !');
-    }
-    return profile;
-  }
-
   /**update profile passing updated profile and profile id */
   async updateProfile(newProfile: Partial<Profile>, profileId: string) {
-    const profile = await this.createQueryBuilder('profile')
+    await this.createQueryBuilder('profile')
       .update('Profile')
       .set(newProfile)
       .where('profile.id = :id', { id: profileId })
       .execute();
-    if (profile.affected === 0) {
+    //the converter pipe will prevent to call this method with a wrong id
+    /*  if (profile.affected === 0) {
       throw new NotFoundException(
         'Mise à jour impossible. Profil non trouvé !',
       );
-    }
+    } */
   }
 }

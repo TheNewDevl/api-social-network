@@ -3,9 +3,9 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/utils/decorators/roles.decorator';
 import { UserRoleEnum } from 'src/utils/enums/roles.enum';
-import { EntityConverterPipe } from 'src/app.entityConverter.pipe';
+import { EntityConverterPipe } from 'src/pipes/app.entityConverter.pipe';
 import { User } from 'src/user/entities/user.entity';
-import { EntityOwnerValidationPipe } from 'src/app.entityOwnerValidation.pipe';
+import { EntityOwnerValidationPipe } from 'src/pipes/app.entityOwnerValidation.pipe';
 import { UserService } from 'src/user/user.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)

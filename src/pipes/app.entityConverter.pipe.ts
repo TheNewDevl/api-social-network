@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   PipeTransform,
+  Scope,
 } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
@@ -16,7 +17,7 @@ export class EntityConverterPipe implements PipeTransform<any> {
         .getRepository(this.type)
         .findOne(value);
       if (!entity) {
-        throw new NotFoundException('Utilisateur introuvable');
+        throw new NotFoundException('Ressource introuvable');
       }
       return entity;
     } catch (error) {

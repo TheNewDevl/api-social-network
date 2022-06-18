@@ -10,7 +10,7 @@ import {
   JoinColumn,
   ManyToMany,
 } from 'typeorm';
-import EntityOwnerInterface from 'src/EntityOwnerInterface';
+import EntityOwnerInterface from 'src/pipes/EntityOwnerInterface';
 
 @Entity()
 export class Post extends TimestampEntity implements EntityOwnerInterface {

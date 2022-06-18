@@ -1,4 +1,4 @@
-import EntityOwnerInterface from 'src/EntityOwnerInterface';
+import EntityOwnerInterface from 'src/pipes/EntityOwnerInterface';
 import { User } from 'src/user/entities/user.entity';
 import { TimestampEntity } from 'src/utils/generics/timestamp.entity';
 import {

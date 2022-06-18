@@ -16,9 +16,6 @@ export class EntityOwnerValidationPipe implements PipeTransform<any> {
   constructor(@Inject(REQUEST) private request) {}
 
   async transform(value: EntityOwnerInterface, metadata: ArgumentMetadata) {
-    console.log(value);
-    console.log(this.request.user.id);
-
     if (!instanceOfEntityOwnerInterface(value)) {
       throw new Error(
         `Object ${JSON.stringify(value)} must implement EntityOwnerInterface`,

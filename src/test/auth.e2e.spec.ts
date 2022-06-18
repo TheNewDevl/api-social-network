@@ -41,6 +41,8 @@ describe('AppController (e2e)', () => {
       password: 'Azerty0.',
     };
 
+    let invalidCookie: string;
+
     describe('/signup', () => {
       it('should return succes message', () => {
         return request(app.getHttpServer())
@@ -201,6 +203,10 @@ describe('AppController (e2e)', () => {
           );
       });
 
+      it('should 401', async () => {
+        return request(app.getHttpServer()).get('/auth/refresh').expect(401);
+      });
+
       it('should return 401', async () => {
         const cookie = ['roizjrehoigejrhre'];
         return request(app.getHttpServer())
@@ -208,12 +214,34 @@ describe('AppController (e2e)', () => {
           .set('Cookie', cookie)
           .expect(401);
       });
+
       it('should return 404', async () => {
+        //create a user to create a valide token then delete user and try using the token
+        const userToDelete = {
+          email: 'todelete@test.com',
+          username: 'todelete',
+          password: 'Azerty0.',
+        };
+        await request(app.getHttpServer())
+          .post('/auth/signup')
+          .send(userToDelete)
+          .expect(201);
+        //log the user
+        const loggedUser = await login(userToDelete);
+        const accessToken = loggedUser.body.user.token;
+        const id = loggedUser.body.user.id;
+
+        //catch de cookie
+        invalidCookie = loggedUser.headers['set-cookie'];
+        //delete the user
+        await request(app.getHttpServer())
+          .delete(`/user/${id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
         return request(app.getHttpServer())
           .get('/auth/refresh')
-          .set('Cookie', [
-            'jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVjMDY5ZDc2LTRmODQtNGE1My05ZmU4LWU5N2ViMjY4ZDYwYiIsInVzZXJuYW1lIjoidXNlcm5hbWUiLCJyb2xlcyI6InVzZXIiLCJpYXQiOjE2NTUzNzIwMzAsImV4cCI6MTY1NTQ1ODQzMH0.6nJIeS-jK5kVBiT-q32HAXvr3fMyp96BOj17h_MS7t4; Max-Age=86400; Path=/; Expires=Fri, 17 Jun 2022 09:33:50 GMT; HttpOnly',
-          ])
+          .set('Cookie', invalidCookie)
           .expect(404);
       });
 
@@ -221,7 +249,7 @@ describe('AppController (e2e)', () => {
         const response = await login(user1);
         const cookie = response.headers['set-cookie'];
 
-        const logout = await request(app.getHttpServer())
+        await request(app.getHttpServer())
           .get('/auth/logout')
           .set('Cookie', cookie);
 
@@ -236,13 +264,11 @@ describe('AppController (e2e)', () => {
     });
 
     describe('logout', () => {
-      it('should return 200 if token is valid but not correspond to any user ', async () => {
+      it('should return 200 if token is valid but dont correspond to any user ', async () => {
         await login(user1);
         return request(app.getHttpServer())
           .get('/auth/logout')
-          .set('Cookie', [
-            'jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVjMDY5ZDc2LTRmODQtNGE1My05ZmU4LWU5N2ViMjY4ZDYwYiIsInVzZXJuYW1lIjoidXNlcm5hbWUiLCJyb2xlcyI6InVzZXIiLCJpYXQiOjE2NTUzNzIwMzAsImV4cCI6MTY1NTQ1ODQzMH0.6nJIeS-jK5kVBiT-q32HAXvr3fMyp96BOj17h_MS7t4; Max-Age=86400; Path=/; Expires=Fri, 17 Jun 2022 09:33:50 GMT; HttpOnly',
-          ])
+          .set('Cookie', invalidCookie)
           .expect(200)
           .expect((res) => expect(res.body).toEqual({}));
       });

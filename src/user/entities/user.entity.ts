@@ -12,7 +12,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import EntityOwnerInterface from 'src/EntityOwnerInterface';
+import EntityOwnerInterface from 'src/pipes/EntityOwnerInterface';
 import { Exclude } from 'class-transformer';
 
 @Entity()

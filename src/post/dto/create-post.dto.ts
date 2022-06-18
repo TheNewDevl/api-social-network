@@ -1,11 +1,4 @@
-import {
-  IsNumber,
-  IsOptional,
-  IsString,
-  Matches,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
@@ -15,10 +8,5 @@ export class CreatePostDto {
 
   @IsOptional()
   @IsString()
-  file: string;
-
-  @IsOptional()
-  @IsNumber()
-  @Matches(/^like$/ || /^unlike$/)
-  like: string;
+  file?: string;
 }

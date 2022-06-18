@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommentModule } from './comments/comment.module';
 import { PostModule } from './post/post.module';
@@ -8,9 +8,7 @@ import { ProfileModule } from './profile/profile.module';
 import { AuthModule } from './auth/auth.module';
 import dbConfig from './utils/config/databaseConfig';
 import * as Joi from 'joi';
-//test logger
 import { MiddlewareConsumer, NestModule } from '@nestjs/common';
-
 import { LoggerMiddleware } from './utils/logger';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -37,7 +35,10 @@ import { Profile } from './profile/entities/profile.entity';
     }),
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
-        if (process.env.NODE_ENV === 'test') {
+        if (
+          process.env.NODE_ENV === 'test' ||
+          process.env.NODE_ENV === 'custom'
+        ) {
           return {
             type: 'sqlite',
             database: ':memory:',

@@ -36,9 +36,13 @@ export class RolesGuard implements CanActivate {
 
     //extract user and params  from request
     const { user } = context.switchToHttp().getRequest();
-    const isAdmin = requiredRoles.some((role) => user.roles?.includes(role));
-    if (isAdmin) {
+
+    if (requiredRoles.some((role) => user.roles.includes(role))) {
       return true;
+    } else {
+      throw new UnauthorizedException(
+        "Vous n'avez pas le droit d'effectuer cette action",
+      );
     }
 
     /*
@@ -90,9 +94,5 @@ export class RolesGuard implements CanActivate {
         return true;
       }
     } */
-
-    throw new UnauthorizedException(
-      "Vous n'avez pas le droit d'effectuer cette action",
-    );
   }
 }

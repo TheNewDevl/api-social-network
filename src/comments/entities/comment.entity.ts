@@ -2,7 +2,7 @@ import { TimestampEntity } from 'src/utils/generics/timestamp.entity';
 import { Post } from 'src/post/entities/post.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
-import EntityOwnerInterface from 'src/EntityOwnerInterface';
+import EntityOwnerInterface from 'src/pipes/EntityOwnerInterface';
 
 @Entity()
 export class Comment extends TimestampEntity implements EntityOwnerInterface {

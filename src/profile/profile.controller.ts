@@ -18,28 +18,13 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { User } from 'src/user/entities/user.entity';
 import { reqUser } from 'src/utils/decorators/user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import {
-  customFileName,
-  fileFilter,
-  limits,
-} from 'src/utils/config/multerConfig';
 import { Request } from 'express';
-import { EntityConverterPipe } from 'src/app.entityConverter.pipe';
+import { EntityConverterPipe } from 'src/pipes/app.entityConverter.pipe';
 import { Profile } from './entities/profile.entity';
-import { EntityOwnerValidationPipe } from 'src/app.entityOwnerValidation.pipe';
+import { EntityOwnerValidationPipe } from 'src/pipes/app.entityOwnerValidation.pipe';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(
-  FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './images',
-      filename: customFileName,
-    }),
-    fileFilter: fileFilter,
-    limits: limits,
-  }),
-)
+@UseInterceptors(FileInterceptor('file'))
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}

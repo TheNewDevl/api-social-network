@@ -9,8 +9,8 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { EntityConverterPipe } from 'src/app.entityConverter.pipe';
-import { EntityOwnerValidationPipe } from 'src/app.entityOwnerValidation.pipe';
+import { EntityConverterPipe } from 'src/pipes/app.entityConverter.pipe';
+import { EntityOwnerValidationPipe } from 'src/pipes/app.entityOwnerValidation.pipe';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { User } from 'src/user/entities/user.entity';
 import { reqUser } from 'src/utils/decorators/user.decorator';

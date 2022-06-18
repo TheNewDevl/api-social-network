@@ -28,22 +28,13 @@ import {
 } from 'src/utils/config/multerConfig';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { LikePostDto } from './dto/like-post.dto';
-import { EntityConverterPipe } from 'src/app.entityConverter.pipe';
+import { EntityConverterPipe } from 'src/pipes/app.entityConverter.pipe';
 import { Post as PostEntity } from './entities/post.entity';
-import { EntityOwnerValidationPipe } from 'src/app.entityOwnerValidation.pipe';
+import { EntityOwnerValidationPipe } from 'src/pipes/app.entityOwnerValidation.pipe';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(
-  FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './images',
-      filename: customFileName,
-    }),
-    fileFilter: fileFilter,
-    limits: limits,
-  }),
-)
+@UseInterceptors(FileInterceptor('file'))
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
