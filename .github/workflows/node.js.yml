@@ -13,6 +13,12 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    
+    env: 
+      ACCESS_TOKEN_KEY: supersecret
+      ACCESS_TOKEN_DURATION: 15s
+      REFRESH_TOKEN_KEY: supersecret2
+      REFRESH_TOKEN_DURATION: 1d
 
     strategy:
       matrix:
