@@ -1,4 +1,4 @@
-![example workflow](https://github.com/https://github.com/TheNewDevl/api-social-network/actions/workflows/node.js.yml/badge.svg)
+![example workflow](https://github.com/TheNewDevl/api-social-network/actions/workflows/node.js.yml/badge.svg)
 
 
 ## REST API
